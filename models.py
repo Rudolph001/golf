@@ -6,7 +6,7 @@ class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, default="The Pinical Point Family Golf Champions Cup")
     start_date = db.Column(db.Date, nullable=False)
-    total_prize_pool = db.Column(db.Integer, default=1000000)
+    total_prize_pool = db.Column(db.Integer, default=1150000)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -147,7 +147,7 @@ class SpecialPrize(db.Model):
     day = db.Column(db.Integer, nullable=False)  # 1, 2, or 3
     prize_type = db.Column(db.String(50), nullable=False)  # 'longest_drive', 'closest_hole', 'most_birdies'
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=True)
-    amount = db.Column(db.Integer, default=6667)  # R6,667 for each special prize
+    amount = db.Column(db.Integer, default=10000)  # R10,000 for each special prize
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships

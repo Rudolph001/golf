@@ -6,9 +6,9 @@ from sqlalchemy import func
 
 def get_prize_distribution(player_count):
     """Calculate dynamic prize distribution with strict descending order and round values"""
-    # Total R1,000,000 - R100,000 for daily special prizes
-    total_main_prize = 900000  # R900,000 for main tournament prizes
-    daily_special_prizes = 100000  # R100,000 for daily special prizes
+    # Total R1,150,000 - R150,000 for daily special prizes
+    total_main_prize = 1000000  # R1,000,000 for main tournament prizes
+    daily_special_prizes = 150000  # R150,000 for daily special prizes
     
     if player_count <= 0:
         return {
@@ -79,25 +79,25 @@ def get_prize_distribution(player_count):
         'main_prizes': prizes,
         'daily_special_prizes': {
             'day_1': {
-                'longest_drive': 6667, 
-                'closest_hole': 6667, 
-                'most_birdies': 6667,
-                'straightest_drive': 6667,
-                'most_pars': 6666
+                'longest_drive': 10000, 
+                'closest_hole': 10000, 
+                'most_birdies': 10000,
+                'straightest_drive': 10000,
+                'most_pars': 10000
             },
             'day_2': {
-                'longest_drive': 6667, 
-                'closest_hole': 6667, 
-                'most_birdies': 6667,
-                'straightest_drive': 6667,
-                'most_pars': 6666
+                'longest_drive': 10000, 
+                'closest_hole': 10000, 
+                'most_birdies': 10000,
+                'straightest_drive': 10000,
+                'most_pars': 10000
             },
             'day_3': {
-                'longest_drive': 6667, 
-                'closest_hole': 6667, 
-                'most_birdies': 6667,
-                'straightest_drive': 6667,
-                'most_pars': 6666
+                'longest_drive': 10000, 
+                'closest_hole': 10000, 
+                'most_birdies': 10000,
+                'straightest_drive': 10000,
+                'most_pars': 10000
             }
         }
     }
@@ -564,7 +564,7 @@ def calculate_leaderboard(tournament_id):
                 tournament_id=tournament_id, 
                 player_id=player.id
             ).all()
-            player_data['special_prizes_won'] = len(special_prizes) * 6667  # R6,667 per special prize (rounded)
+            player_data['special_prizes_won'] = len(special_prizes) * 10000  # R10,000 per special prize
         except Exception:
             # Handle case where day column doesn't exist yet
             player_data['special_prizes_won'] = 0
