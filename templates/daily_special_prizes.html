@@ -35,7 +35,9 @@
                         {% set prize_info = {
                             'longest_drive': {'name': 'Longest Drive', 'icon': 'fas fa-golf-ball', 'description': 'Furthest drive of the day'},
                             'closest_hole': {'name': 'Closest to the Hole', 'icon': 'fas fa-target', 'description': 'Closest ball to the pin'},
-                            'most_birdies': {'name': 'Most Birdies', 'icon': 'fas fa-trophy', 'description': 'Most birdies scored in the day'}
+                            'most_birdies': {'name': 'Most Birdies', 'icon': 'fas fa-trophy', 'description': 'Most birdies scored in the day'},
+                            'straightest_drive': {'name': 'Straightest Drive', 'icon': 'fas fa-arrows-alt-h', 'description': 'Most accurate drive down the fairway'},
+                            'most_pars': {'name': 'Most Pars', 'icon': 'fas fa-bullseye', 'description': 'Most pars scored in the day'}
                         } %}
                         
                         {% for prize_type, info in prize_info.items() %}
@@ -50,7 +52,7 @@
                                 <div class="card-body">
                                     <p class="card-text small">{{ info.description }}</p>
                                     <p class="text-success mb-2">
-                                        <strong>Prize: R50,000</strong>
+                                        <strong>Prize: R30,000</strong>
                                     </p>
                                     
                                     {% if daily_special_prizes[day][prize_type] %}
@@ -95,7 +97,7 @@
             <div class="alert alert-info">
                 <h5><i class="fas fa-info-circle me-2"></i>Prize Summary</h5>
                 <ul class="mb-0">
-                    <li><strong>Daily Special Prizes:</strong> R150,000 per day × 3 days = R450,000</li>
+                    <li><strong>Daily Special Prizes:</strong> R150,000 per day × 3 days = R450,000 (5 prizes × R30,000 each per day)</li>
                     <li><strong>Main Tournament Prizes:</strong> R550,000 (distributed by final ranking)</li>
                     <li><strong>Total Prize Pool:</strong> R1,000,000</li>
                 </ul>

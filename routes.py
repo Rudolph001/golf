@@ -78,9 +78,27 @@ def get_prize_distribution(player_count):
     return {
         'main_prizes': prizes,
         'daily_special_prizes': {
-            'day_1': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
-            'day_2': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
-            'day_3': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000}
+            'day_1': {
+                'longest_drive': 30000, 
+                'closest_hole': 30000, 
+                'most_birdies': 30000,
+                'straightest_drive': 30000,
+                'most_pars': 30000
+            },
+            'day_2': {
+                'longest_drive': 30000, 
+                'closest_hole': 30000, 
+                'most_birdies': 30000,
+                'straightest_drive': 30000,
+                'most_pars': 30000
+            },
+            'day_3': {
+                'longest_drive': 30000, 
+                'closest_hole': 30000, 
+                'most_birdies': 30000,
+                'straightest_drive': 30000,
+                'most_pars': 30000
+            }
         }
     }
 
@@ -304,7 +322,7 @@ def special_prizes():
     daily_special_prizes = {}
     for day in [1, 2, 3]:
         daily_special_prizes[day] = {}
-        for prize_type in ['longest_drive', 'closest_hole', 'most_birdies']:
+        for prize_type in ['longest_drive', 'closest_hole', 'most_birdies', 'straightest_drive', 'most_pars']:
             prize = SpecialPrize.query.filter_by(
                 tournament_id=tournament.id, 
                 day=day, 
@@ -394,7 +412,7 @@ def calculate_leaderboard(tournament_id):
                 tournament_id=tournament_id, 
                 player_id=player.id
             ).all()
-            player_data['special_prizes_won'] = len(special_prizes) * 50000  # R50,000 per special prize
+            player_data['special_prizes_won'] = len(special_prizes) * 30000  # R30,000 per special prize
         except Exception:
             # Handle case where day column doesn't exist yet
             player_data['special_prizes_won'] = 0

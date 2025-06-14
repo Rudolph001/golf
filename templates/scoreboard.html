@@ -178,26 +178,34 @@
                     </div>
 
                     <!-- Daily Special Skill Prizes -->
-                    <h5 class="text-warning mb-2">Daily Special Skill Prizes</h5>
+                    <h5 class="text-warning mb-2">Daily Special Skill Prizes (5 per day)</h5>
                     <div class="row">
-                        <div class="col-md-4 col-12 mb-2">
-                            <strong><i class="fas fa-golf-ball me-2"></i>Longest Drive (per day):</strong>
+                        <div class="col-md-2 col-6 mb-2">
+                            <strong><i class="fas fa-golf-ball me-1"></i>Longest Drive:</strong>
                             <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.longest_drive) }}</span>
                         </div>
-                        <div class="col-md-4 col-12 mb-2">
-                            <strong><i class="fas fa-target me-2"></i>Closest to Hole (per day):</strong>
+                        <div class="col-md-2 col-6 mb-2">
+                            <strong><i class="fas fa-target me-1"></i>Closest to Hole:</strong>
                             <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.closest_hole) }}</span>
                         </div>
-                        <div class="col-md-4 col-12 mb-2">
-                            <strong><i class="fas fa-award me-2"></i>Most Birdies (per day):</strong>
+                        <div class="col-md-2 col-6 mb-2">
+                            <strong><i class="fas fa-award me-1"></i>Most Birdies:</strong>
                             <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.most_birdies) }}</span>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <strong><i class="fas fa-arrows-alt-h me-1"></i>Straightest Drive:</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.straightest_drive) }}</span>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <strong><i class="fas fa-bullseye me-1"></i>Most Pars:</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.most_pars) }}</span>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-12">
                             <small class="text-muted">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Each prize awarded daily across 3 days = R450,000 total special prizes
+                                5 prizes × R30,000 each × 3 days = R450,000 total special prizes
                             </small>
                         </div>
                     </div>
