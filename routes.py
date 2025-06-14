@@ -199,15 +199,10 @@ def scoreboard():
     leaderboard = calculate_leaderboard(tournament.id)
     rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
     
-    # Get dynamic prize distribution based on actual player count
-    player_count = len(Player.query.filter_by(tournament_id=tournament.id).all())
-    prize_distribution = get_prize_distribution(player_count)
-    
     return render_template('scoreboard.html',
                          tournament=tournament,
                          leaderboard=leaderboard,
                          rounds=rounds,
-                         prize_distribution=prize_distribution,
                          tournament_formats=TOURNAMENT_FORMATS)
 
 @app.route('/prize_money')
