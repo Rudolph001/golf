@@ -147,7 +147,7 @@ class SpecialPrize(db.Model):
     day = db.Column(db.Integer, nullable=False)  # 1, 2, or 3
     prize_type = db.Column(db.String(50), nullable=False)  # 'longest_drive', 'closest_hole', 'most_birdies'
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=True)
-    amount = db.Column(db.Integer, default=50000)  # R50,000 for each special prize
+    amount = db.Column(db.Integer, default=6667)  # R6,667 for each special prize
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
