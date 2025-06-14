@@ -28,13 +28,13 @@ def index():
     tournament = Tournament.query.first()
     if not tournament:
         return redirect(url_for('player_setup'))
-    
+
     players = Player.query.filter_by(tournament_id=tournament.id).all()
     rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
-    
+
     # Calculate leaderboard
     leaderboard = calculate_leaderboard(tournament.id)
-    
+
     return render_template('index.html', 
                          tournament=tournament, 
                          players=players, 
@@ -53,7 +53,7 @@ def player_setup():
         )
         db.session.add(tournament)
         db.session.flush()  # Get tournament ID
-        
+
         # Create players
         player_names = []
         for i in range(1, 9):  # 8 players
@@ -65,15 +65,15 @@ def player_setup():
                     handicap_value = max(0, min(36, handicap_value))  # Ensure handicap is between 0-36
                 except (ValueError, TypeError):
                     handicap_value = 18
-                
+
                 player = Player(name=name.strip(), tournament_id=tournament.id, handicap=handicap_value)
                 db.session.add(player)
                 player_names.append(name.strip())
-        
+
         if len(player_names) != 8:
             flash('Please enter exactly 8 player names', 'error')
             return render_template('player_setup.html')
-        
+
         # Create rounds for 3 days
         for day in range(1, 4):
             round_format = TOURNAMENT_FORMATS[day]['format']
@@ -84,11 +84,11 @@ def player_setup():
                 date=date.today()
             )
             db.session.add(round_obj)
-        
+
         db.session.commit()
         flash('Tournament setup completed successfully!', 'success')
         return redirect(url_for('index'))
-    
+
     return render_template('player_setup.html')
 
 @app.route('/scoreboard')
@@ -97,10 +97,10 @@ def scoreboard():
     tournament = Tournament.query.first()
     if not tournament:
         return redirect(url_for('player_setup'))
-    
+
     leaderboard = calculate_leaderboard(tournament.id)
     rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
-    
+
     return render_template('scoreboard.html',
                          tournament=tournament,
                          leaderboard=leaderboard,
@@ -114,10 +114,10 @@ def admin():
     tournament = Tournament.query.first()
     if not tournament:
         return redirect(url_for('player_setup'))
-    
+
     players = Player.query.filter_by(tournament_id=tournament.id).all()
     rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
-    
+
     return render_template('admin.html',
                          tournament=tournament,
                          players=players,
@@ -129,14 +129,14 @@ def scorecard(player_id, round_id):
     """Detailed scorecard entry for a player and round"""
     player = Player.query.get_or_404(player_id)
     round_obj = Round.query.get_or_404(round_id)
-    
+
     # Get or create score record
     score = Score.query.filter_by(player_id=player_id, round_id=round_id).first()
     if not score:
         score = Score(player_id=player_id, round_id=round_id)
         db.session.add(score)
         db.session.commit()
-    
+
     return render_template('scorecard.html',
                          player=player,
                          round=round_obj,
@@ -149,27 +149,27 @@ def update_score():
     """Update hole-by-hole scores"""
     score_id = request.form.get('score_id')
     score = Score.query.get_or_404(score_id)
-    
+
     # Update hole scores
     for hole in range(1, 19):
         hole_score = request.form.get(f'hole_{hole}')
         if hole_score and hole_score.isdigit():
             score.set_hole_score(hole, int(hole_score))
-    
+
     # Calculate totals
     score.calculate_totals()
     score.updated_at = datetime.utcnow()
-    
+
     db.session.commit()
     flash('Scorecard updated successfully!', 'success')
-    
+
     return redirect(url_for('scorecard', player_id=score.player_id, round_id=score.round_id))
 
 def calculate_leaderboard(tournament_id):
     """Calculate tournament leaderboard with cumulative scores including handicap"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
     leaderboard = []
-    
+
     for player in players:
         player_data = {
             'player': player,
@@ -180,7 +180,7 @@ def calculate_leaderboard(tournament_id):
             'total_points': 0,
             'rounds_completed': 0
         }
-        
+
         # Get scores for each day
         for day in range(1, 4):
             round_obj = Round.query.filter_by(tournament_id=tournament_id, day=day).first()
@@ -189,7 +189,7 @@ def calculate_leaderboard(tournament_id):
                 if score and score.total_strokes:
                     gross_score = score.total_strokes
                     net_score = score.get_net_score()
-                    
+
                     if round_obj.format == 'stableford':
                         player_data['day_scores'][day-1] = score.stableford_points
                         player_data['total_points'] += score.stableford_points
@@ -200,15 +200,39 @@ def calculate_leaderboard(tournament_id):
                         if net_score:
                             player_data['total_net_score'] += net_score
                     player_data['rounds_completed'] += 1
-        
+
         leaderboard.append(player_data)
-    
+
     # Sort leaderboard by net scores for stroke play, points for stableford
     leaderboard.sort(key=lambda x: (-x['total_points'], x['total_net_score'], x['total_score'], -x['rounds_completed']))
-    
+
     # Assign rankings and prize money
     for i, player_data in enumerate(leaderboard):
         player_data['rank'] = i + 1
         player_data['prize'] = PRIZE_DISTRIBUTION.get(i + 1, 0)
-    
+
     return leaderboard
+
+@app.route('/clear_scorecard/<int:score_id>', methods=['POST'])
+def clear_scorecard(score_id):
+    """Clear an individual player's scorecard"""
+    try:
+        score = Score.query.get_or_404(score_id)
+
+        # Clear all hole scores
+        for hole in range(1, 19):
+            score.set_hole_score(hole, None)
+
+        # Reset totals
+        score.total_strokes = None
+        score.stableford_points = None
+        score.updated_at = datetime.utcnow()
+
+        db.session.commit()
+        flash('Scorecard cleared successfully!', 'success')
+
+        return redirect(url_for('scorecard', player_id=score.player_id, round_id=score.round_id))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error clearing scorecard: {str(e)}', 'error')
+        return redirect(url_for('admin'))
