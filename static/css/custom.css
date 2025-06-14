@@ -146,20 +146,60 @@
 /* Large screen optimizations for TV display */
 @media (min-width: 1200px) {
     .scoreboard-table {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
     
     .scoreboard-table th {
-        font-size: 1.1rem;
-        padding: 1rem 0.5rem;
+        font-size: 1rem;
+        padding: 0.75rem 0.5rem;
     }
     
     .scoreboard-table td {
-        padding: 1.25rem 0.5rem;
+        padding: 0.75rem 0.5rem;
     }
     
     .display-4 {
-        font-size: 3.5rem;
+        font-size: 2.5rem;
+    }
+}
+
+/* Compact scoreboard for better screen fit */
+.scoreboard-table {
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.scoreboard-table th {
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.scoreboard-table td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.scoreboard-table .badge {
+    font-size: 0.8em;
+    padding: 0.35em 0.6em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .scoreboard-table {
+        font-size: 0.9rem;
+    }
+    
+    .scoreboard-table th,
+    .scoreboard-table td {
+        padding: 0.5rem 0.3rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .scoreboard-table {
+        font-size: 0.85rem;
     }
 }
 
