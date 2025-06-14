@@ -584,9 +584,9 @@ def calculate_leaderboard(tournament_id):
         # Look for tied players (must have same net score and same total points)
         j = i + 1
         while (j < len(leaderboard) and 
+               current_score is not None and
                leaderboard[j]['net_score'] == current_score and 
-               leaderboard[j]['total_points'] == current_points and
-               current_score is not None):  # Only tie if both have valid scores
+               leaderboard[j]['total_points'] == current_points):  # Only tie if both have valid scores
             tied_players.append(leaderboard[j])
             j += 1
         
@@ -597,8 +597,8 @@ def calculate_leaderboard(tournament_id):
             for pos in range(current_rank, current_rank + len(tied_players)):
                 total_tied_prize += prize_distribution['main_prizes'].get(pos, 0)
             
-            # Split the prize equally among tied players (use regular division and round down)
-            split_prize = int(total_tied_prize / len(tied_players))
+            # Split the prize equally among tied players
+            split_prize = total_tied_prize // len(tied_players)
             
             # Assign same rank and split prize to all tied players
             for player_data in tied_players:
