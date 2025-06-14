@@ -4,26 +4,36 @@
 
 {% block content %}
 <div class="container">
-    <!-- Scorecard Header -->
+    <!-- Professional Scorecard Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-success">
-                <div class="card-body">
-                    <div class="row align-items-center">
+            <div class="card tournament-header">
+                <div class="card-body text-center py-4 position-relative">
+                    <h1 class="display-5 text-white mb-2 tournament-logo">
+                        <i class="fas fa-golf-ball me-3 trophy-icon"></i>
+                        SCORECARD - {{ player.name.upper() }}
+                    </h1>
+                    <h3 class="tournament-tagline mb-3">
+                        Day {{ round.day }}: {{ tournament_formats[round.day].name }}
+                    </h3>
+                    <div class="row justify-content-center">
                         <div class="col-md-8">
-                            <h1 class="card-title text-white mb-1">
-                                <i class="fas fa-golf-ball me-2"></i>
-                                {{ player.name }} - Day {{ round.day }}
-                                <span class="badge bg-light text-dark ms-2">Handicap: {{ player.handicap }}</span>
-                            </h1>
-                            <p class="card-text text-white-50 mb-0">
-                                {{ tournament_formats[round.day].name }} • {{ tournament_formats[round.day].description }}
+                            <p class="text-white mb-2 fs-5">
+                                <i class="fas fa-user-golf me-2"></i>
+                                Handicap: {{ player.handicap }}
+                                <span class="ms-4">
+                                    <i class="fas fa-flag me-2"></i>
+                                    {{ tournament_formats[round.day].description }}
+                                </span>
                             </p>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <a href="{{ url_for('admin') }}" class="btn btn-light">
-                                <i class="fas fa-arrow-left me-1"></i>Back to Admin
-                            </a>
+                            <div class="mt-3">
+                                <a href="{{ url_for('admin') }}" class="btn btn-tournament me-2">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Admin
+                                </a>
+                                <button type="button" class="btn btn-outline-light" onclick="printScorecard()">
+                                    <i class="fas fa-print me-1"></i>Print Scorecard
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -38,9 +48,12 @@
         <!-- Front Nine -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Front Nine</h4>
+                <div class="card leaderboard-card">
+                    <div class="card-header text-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-flag-checkered me-2"></i>
+                            Front Nine
+                        </h4>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -130,9 +143,12 @@
         <!-- Back Nine -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Back Nine</h4>
+                <div class="card leaderboard-card">
+                    <div class="card-header text-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-flag me-2"></i>
+                            Back Nine
+                        </h4>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -221,49 +237,68 @@
         <!-- Score Summary -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0">Score Summary</h4>
+                <div class="card leaderboard-card">
+                    <div class="card-header text-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calculator me-2"></i>
+                            Score Summary
+                        </h4>
                     </div>
                     <div class="card-body">
                         <div class="row text-center">
-                            <div class="col-md-3 mb-3">
-                                <h3 class="text-primary mb-1" id="total-strokes">{{ score.total_strokes or '-' }}</h3>
-                                <p class="mb-0">Total Strokes</p>
+                            <div class="col-lg-2 col-md-4 mb-3">
+                                <div class="stats-card p-3 border rounded">
+                                    <h3 class="text-primary mb-1" id="total-strokes">{{ score.total_strokes or '-' }}</h3>
+                                    <p class="mb-0 text-golf-green fw-bold">Total Strokes</p>
+                                </div>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <h3 class="text-success mb-1" id="total-par">72</h3>
-                                <p class="mb-0">Course Par</p>
+                            <div class="col-lg-2 col-md-4 mb-3">
+                                <div class="stats-card p-3 border rounded">
+                                    <h3 class="text-success mb-1" id="total-par">72</h3>
+                                    <p class="mb-0 text-golf-green fw-bold">Course Par</p>
+                                </div>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <h3 class="text-info mb-1" id="score-to-par">
-                                    {% if score.total_strokes %}
-                                        {% if score.total_strokes > 72 %}
-                                            +{{ score.total_strokes - 72 }}
-                                        {% elif score.total_strokes < 72 %}
-                                            {{ score.total_strokes - 72 }}
+                            <div class="col-lg-2 col-md-4 mb-3">
+                                <div class="stats-card p-3 border rounded">
+                                    <h3 class="mb-1" id="score-to-par">
+                                        {% if score.total_strokes %}
+                                            {% if score.total_strokes > 72 %}
+                                                <span class="text-danger">+{{ score.total_strokes - 72 }}</span>
+                                            {% elif score.total_strokes < 72 %}
+                                                <span class="text-success">{{ score.total_strokes - 72 }}</span>
+                                            {% else %}
+                                                <span class="text-secondary">E</span>
+                                            {% endif %}
                                         {% else %}
-                                            E
+                                            <span class="text-muted">-</span>
                                         {% endif %}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </h3>
-                                <p class="mb-0">To Par</p>
+                                    </h3>
+                                    <p class="mb-0 text-golf-green fw-bold">To Par</p>
+                                </div>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <h3 class="text-success mb-1" id="net-score">
-                                    {% if score.get_net_score() %}
-                                        {{ score.get_net_score() }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </h3>
-                                <p class="mb-0">Net Score</p>
+                            <div class="col-lg-2 col-md-4 mb-3">
+                                <div class="stats-card p-3 border rounded">
+                                    <h3 class="text-success mb-1" id="net-score">
+                                        {% if score.get_net_score() %}
+                                            {{ score.get_net_score() }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </h3>
+                                    <p class="mb-0 text-golf-green fw-bold">Net Score</p>
+                                </div>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <h3 class="text-warning mb-1" id="stableford-points">{{ score.stableford_points or '-' }}</h3>
-                                <p class="mb-0">Stableford Points</p>
+                            <div class="col-lg-2 col-md-4 mb-3">
+                                <div class="stats-card p-3 border rounded">
+                                    <h3 class="text-warning mb-1" id="stableford-points">{{ score.stableford_points or '-' }}</h3>
+                                    <p class="mb-0 text-golf-green fw-bold">Stableford Points</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-4 mb-3">
+                                <div class="stats-card p-3 border rounded">
+                                    <h3 class="text-info mb-1">{{ player.handicap }}</h3>
+                                    <p class="mb-0 text-golf-green fw-bold">Handicap</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -273,16 +308,34 @@
 
         <!-- Action Buttons -->
         <div class="row mb-4">
-            <div class="col-12 text-center">
-                <button type="submit" class="btn btn-success btn-lg me-3">
-                    <i class="fas fa-save me-2"></i>Save Score
-                </button>
-                <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-lg me-3">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Admin
-                </a>
-                <button type="button" class="btn btn-info btn-lg" onclick="printScorecard()">
-                    <i class="fas fa-print me-2"></i>Print
-                </button>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-tools me-2"></i>
+                            Scorecard Actions
+                        </h5>
+                        <div class="d-flex justify-content-center flex-wrap gap-3">
+                            <button type="submit" class="btn btn-tournament btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Scorecard
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-lg" onclick="autoSave()">
+                                <i class="fas fa-sync me-2"></i>Auto Save
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-lg" onclick="refreshLeaderboard()">
+                                <i class="fas fa-chart-line me-2"></i>View Leaderboard
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-lg" onclick="printScorecard()">
+                                <i class="fas fa-print me-2"></i>Print Scorecard
+                            </button>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ url_for('admin') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Tournament Control
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>

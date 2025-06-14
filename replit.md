@@ -110,6 +110,8 @@ This is a Flask-based web application for managing a family golf tournament at P
 - June 14, 2025: Removed Prize Distribution section from Tournament Leaderboard dashboard for cleaner display
 - June 14, 2025: Removed prize distribution data from scoreboard route to eliminate all prize displays from tournament view
 - June 14, 2025: Added par scoring display to Championship Leaderboard and scoreboard showing over/under par (e.g., -1, +5, E)
+- June 14, 2025: Updated par calculation logic to use actual days with scores (1 day = 72 par, 2 days = 144 par, 3 days = 216 par)
+- June 14, 2025: Enhanced scorecard template with professional styling matching other dashboards (tournament header, leaderboard cards, stats cards)
 
 ## Changelog
 - June 14, 2025. Initial tournament system setup
