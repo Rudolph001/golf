@@ -5,94 +5,84 @@ from datetime import datetime, date
 from sqlalchemy import func
 
 def get_prize_distribution(player_count):
-    """Calculate dynamic prize distribution ensuring no one gets the same amount"""
-    total_main_prize = 955000  # R955,000 for main prizes (leaving R45,000 for special prizes)
-    special_prizes_total = 45000  # R15,000 each for 3 special prizes
+    """Calculate dynamic prize distribution with strict descending order"""
+    # Total R1,000,000 - R450,000 for daily special prizes (R50k x 3 prizes x 3 days)
+    total_main_prize = 550000  # R550,000 for main tournament prizes
+    daily_special_prizes = 450000  # R450,000 for daily special prizes (R150k per day)
     
     if player_count <= 0:
-        return {'main_prizes': {}, 'special_prizes': {'longest_drive': 15000, 'closest_hole': 15000, 'most_birdies': 15000}}
+        return {
+            'main_prizes': {}, 
+            'daily_special_prizes': {
+                'day_1': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
+                'day_2': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
+                'day_3': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000}
+            }
+        }
     
-    prizes = {}
-    
+    # Define percentage distribution that ensures descending order
     if player_count == 1:
-        prizes[1] = total_main_prize
+        percentages = [100]
     elif player_count == 2:
-        prizes[1] = 573000  # 60%
-        prizes[2] = 382000  # 40%
+        percentages = [60, 40]
     elif player_count == 3:
-        prizes[1] = 477500  # 50%
-        prizes[2] = 286500  # 30%
-        prizes[3] = 191000  # 20%
+        percentages = [50, 30, 20]
     elif player_count == 4:
-        prizes[1] = 334250  # 35%
-        prizes[2] = 238750  # 25%
-        prizes[3] = 191000  # 20%
-        prizes[4] = 191000  # 20%
+        percentages = [35, 25, 22, 18]
     elif player_count == 5:
-        prizes[1] = 286500  # 30%
-        prizes[2] = 210375  # 22%
-        prizes[3] = 172275  # 18%
-        prizes[4] = 143775  # 15%
-        prizes[5] = 142075  # 15%
+        percentages = [30, 22, 18, 16, 14]
     elif player_count == 6:
-        prizes[1] = 267575  # 28%
-        prizes[2] = 191000  # 20%
-        prizes[3] = 143775  # 15%
-        prizes[4] = 124925  # 13%
-        prizes[5] = 114375  # 12%
-        prizes[6] = 113350  # 12%
+        percentages = [28, 20, 16, 14, 12, 10]
     elif player_count == 7:
-        prizes[1] = 238750  # 25%
-        prizes[2] = 171825  # 18%
-        prizes[3] = 124925  # 13%
-        prizes[4] = 105575  # 11%
-        prizes[5] = 95500   # 10%
-        prizes[6] = 91075   # 9.5%
-        prizes[7] = 127350  # Rest
+        percentages = [25, 18, 15, 13, 11, 10, 8]
     elif player_count == 8:
-        prizes[1] = 238750  # 25%
-        prizes[2] = 171825  # 18%
-        prizes[3] = 124925  # 13%
-        prizes[4] = 95500   # 10%
-        prizes[5] = 76400   # 8%
-        prizes[6] = 66925   # 7%
-        prizes[7] = 57450   # 6%
-        prizes[8] = 123225  # Rest
+        percentages = [25, 18, 13, 11, 9, 8, 7, 9]
     else:
-        # For more than 8 players, create descending amounts
-        base_amounts = [238750, 171825, 124925, 95500, 76400, 66925, 57450]
-        total_used = sum(base_amounts)
-        remaining = total_main_prize - total_used
-        remaining_players = player_count - 7
+        # For more than 8 players: top positions get fixed percentages, rest descend
+        percentages = [25, 18, 13, 10, 8, 7, 6, 5]  # Top 8 positions
+        remaining_percentage = 8  # 8% for remaining players
         
-        # Create descending amounts for remaining players
-        for i, amount in enumerate(base_amounts, 1):
-            prizes[i] = amount
-        
-        # Distribute remaining amount in descending order
-        step = remaining // (remaining_players * 2)  # Create variation
-        for i in range(8, player_count + 1):
-            amount = max(20000, remaining - (i - 8) * step)
-            prizes[i] = amount
-            remaining -= amount
-        
-        # Adjust if needed
-        if remaining > 0:
-            prizes[1] += remaining
+        # Distribute remaining percentage in descending order
+        remaining_players = player_count - 8
+        if remaining_players > 0:
+            base_percentage = remaining_percentage / remaining_players
+            for i in range(remaining_players):
+                # Each position gets slightly less than the previous
+                reduction = i * 0.2  # 0.2% reduction per position
+                percentages.append(max(1, int(base_percentage - reduction)))
     
-    # Ensure all amounts are different by adding small variations
-    amounts_used = set()
-    for pos in sorted(prizes.keys()):
-        while prizes[pos] in amounts_used:
-            prizes[pos] += 25  # Add R25 if duplicate
-        amounts_used.add(prizes[pos])
+    # Calculate actual prize amounts
+    prizes = {}
+    for i in range(player_count):
+        position = i + 1
+        percentage = percentages[i] if i < len(percentages) else 0.5
+        amount = int(total_main_prize * percentage / 100)
+        prizes[position] = amount
+    
+    # Force strict descending order - sort amounts and reassign
+    sorted_amounts = sorted(prizes.values(), reverse=True)
+    final_prizes = {}
+    
+    for i in range(player_count):
+        position = i + 1
+        final_prizes[position] = sorted_amounts[i]
+    
+    # Ensure no duplicates by reducing subsequent amounts slightly
+    previous_amount = None
+    for position in sorted(final_prizes.keys()):
+        if previous_amount is not None and final_prizes[position] >= previous_amount:
+            final_prizes[position] = previous_amount - 500  # R500 less than previous
+        previous_amount = final_prizes[position]
+        
+        # Ensure minimum prize of R15,000
+        final_prizes[position] = max(15000, final_prizes[position])
     
     return {
-        'main_prizes': prizes,
-        'special_prizes': {
-            'longest_drive': 15000,
-            'closest_hole': 15000, 
-            'most_birdies': 15000
+        'main_prizes': final_prizes,
+        'daily_special_prizes': {
+            'day_1': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
+            'day_2': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
+            'day_3': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000}
         }
     }
 

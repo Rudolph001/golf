@@ -97,6 +97,10 @@ This is a Flask-based web application for managing a family golf tournament at P
 - June 14, 2025: Implemented dynamic prize distribution system that adjusts based on actual number of players registered
 - June 14, 2025: Fixed admin panel button functionality for clearing scores and resetting tournaments
 - June 14, 2025: Tournament name updated to "The Pinicalpoint Family Champions Cup"
+- June 14, 2025: Migration from Replit Agent to standard Replit environment completed
+- June 14, 2025: Prize distribution fixed to ensure strict descending order (1st place highest, last place lowest)
+- June 14, 2025: Special skill prizes increased from R15,000 to R50,000 each
+- June 14, 2025: Added special prize management interface for longest drive, closest to hole, and most birdies
 
 ## Changelog
 - June 14, 2025. Initial tournament system setup
