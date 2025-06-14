@@ -106,6 +106,8 @@ This is a Flask-based web application for managing a family golf tournament at P
 - June 14, 2025: Migration from Replit Agent to standard Replit environment completed successfully
 - June 14, 2025: Fixed leaderboard display issues - removed Prize column from main leaderboard view
 - June 14, 2025: Improved table alignment and centering for better display consistency
+- June 14, 2025: Added proper Rank column header to tournament leaderboard
+- June 14, 2025: Removed Prize Distribution section from Tournament Leaderboard dashboard for cleaner display
 
 ## Changelog
 - June 14, 2025. Initial tournament system setup
