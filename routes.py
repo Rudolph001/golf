@@ -58,8 +58,15 @@ def player_setup():
         player_names = []
         for i in range(1, 9):  # 8 players
             name = request.form.get(f'player_{i}')
+            handicap = request.form.get(f'handicap_{i}', 18)
             if name and name.strip():
-                player = Player(name=name.strip(), tournament_id=tournament.id)
+                try:
+                    handicap_value = int(handicap) if handicap else 18
+                    handicap_value = max(0, min(36, handicap_value))  # Ensure handicap is between 0-36
+                except (ValueError, TypeError):
+                    handicap_value = 18
+                
+                player = Player(name=name.strip(), tournament_id=tournament.id, handicap=handicap_value)
                 db.session.add(player)
                 player_names.append(name.strip())
         
@@ -159,7 +166,7 @@ def update_score():
     return redirect(url_for('scorecard', player_id=score.player_id, round_id=score.round_id))
 
 def calculate_leaderboard(tournament_id):
-    """Calculate tournament leaderboard with cumulative scores"""
+    """Calculate tournament leaderboard with cumulative scores including handicap"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
     leaderboard = []
     
@@ -167,7 +174,9 @@ def calculate_leaderboard(tournament_id):
         player_data = {
             'player': player,
             'day_scores': [None, None, None],
+            'day_net_scores': [None, None, None],
             'total_score': 0,
+            'total_net_score': 0,
             'total_points': 0,
             'rounds_completed': 0
         }
@@ -178,19 +187,24 @@ def calculate_leaderboard(tournament_id):
             if round_obj:
                 score = Score.query.filter_by(player_id=player.id, round_id=round_obj.id).first()
                 if score and score.total_strokes:
+                    gross_score = score.total_strokes
+                    net_score = score.get_net_score()
+                    
                     if round_obj.format == 'stableford':
                         player_data['day_scores'][day-1] = score.stableford_points
                         player_data['total_points'] += score.stableford_points
                     else:
-                        player_data['day_scores'][day-1] = score.total_strokes
-                        player_data['total_score'] += score.total_strokes
+                        player_data['day_scores'][day-1] = gross_score
+                        player_data['day_net_scores'][day-1] = net_score
+                        player_data['total_score'] += gross_score
+                        if net_score:
+                            player_data['total_net_score'] += net_score
                     player_data['rounds_completed'] += 1
         
         leaderboard.append(player_data)
     
-    # Sort leaderboard (stroke play: lower is better, stableford: higher is better)
-    # For mixed formats, we'll use a combined scoring system
-    leaderboard.sort(key=lambda x: (-x['total_points'], x['total_score'], -x['rounds_completed']))
+    # Sort leaderboard by net scores for stroke play, points for stableford
+    leaderboard.sort(key=lambda x: (-x['total_points'], x['total_net_score'], x['total_score'], -x['rounds_completed']))
     
     # Assign rankings and prize money
     for i, player_data in enumerate(leaderboard):

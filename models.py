@@ -74,7 +74,7 @@ class Score(db.Model):
         setattr(self, f'hole_{hole_number}', score)
     
     def calculate_totals(self):
-        """Calculate total strokes and stableford points"""
+        """Calculate total strokes and stableford points with handicap"""
         hole_scores = []
         for i in range(1, 19):
             score = self.get_hole_score(i)
@@ -83,9 +83,63 @@ class Score(db.Model):
         
         if hole_scores:
             self.total_strokes = sum(hole_scores)
-            # Calculate Stableford points (assuming par 4 for all holes for simplicity)
-            # In real implementation, you'd have course data with par for each hole
-            self.stableford_points = sum(max(0, 6 - score) for score in hole_scores)
+            
+            # Calculate Stableford points with handicap
+            player_handicap = self.player.handicap
+            handicap_strokes = self._distribute_handicap_strokes(player_handicap)
+            
+            stableford_total = 0
+            for i, score in enumerate(hole_scores):
+                if i < len(PINACLEPOINT_COURSE['holes']):
+                    hole_par = PINACLEPOINT_COURSE['holes'][i]['par']
+                    hole_handicap_strokes = handicap_strokes.get(i + 1, 0)
+                    
+                    # Net score = gross score - handicap strokes for this hole
+                    net_score = score - hole_handicap_strokes
+                    
+                    # Stableford points calculation
+                    if net_score <= hole_par - 2:  # Eagle or better
+                        points = 4
+                    elif net_score == hole_par - 1:  # Birdie
+                        points = 3
+                    elif net_score == hole_par:  # Par
+                        points = 2
+                    elif net_score == hole_par + 1:  # Bogey
+                        points = 1
+                    else:  # Double bogey or worse
+                        points = 0
+                    
+                    stableford_total += points
+            
+            self.stableford_points = stableford_total
+    
+    def _distribute_handicap_strokes(self, handicap):
+        """Distribute handicap strokes across holes based on hole difficulty"""
+        handicap_strokes = {}
+        
+        # Sort holes by handicap rating (difficulty)
+        holes_by_difficulty = sorted(PINACLEPOINT_COURSE['holes'], key=lambda x: x['handicap'])
+        
+        # Distribute strokes starting with most difficult holes
+        remaining_strokes = handicap
+        for hole in holes_by_difficulty:
+            if remaining_strokes > 0:
+                hole_number = hole['number']
+                handicap_strokes[hole_number] = 1
+                remaining_strokes -= 1
+                
+                # If handicap > 18, give second stroke to most difficult holes
+                if remaining_strokes > 0 and handicap > 18:
+                    handicap_strokes[hole_number] = 2
+                    remaining_strokes -= 1
+        
+        return handicap_strokes
+    
+    def get_net_score(self):
+        """Get handicap-adjusted net score"""
+        if self.total_strokes:
+            return self.total_strokes - self.player.handicap
+        return None
 
 # Pinaclepoint Golf Estate course data
 PINACLEPOINT_COURSE = {

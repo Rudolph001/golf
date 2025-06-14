@@ -72,13 +72,14 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Rank</th>
-                                    <th>Player</th>
-                                    <th>Day 1</th>
-                                    <th>Day 2</th>
-                                    <th>Day 3</th>
-                                    <th>Total</th>
-                                    <th>Prize</th>
+                                    <th class="text-start">Player</th>
+                                    <th class="text-center">HC</th>
+                                    <th class="text-center">Day 1</th>
+                                    <th class="text-center">Day 2</th>
+                                    <th class="text-center">Day 3</th>
+                                    <th class="text-center">Gross</th>
+                                    <th class="text-center">Net</th>
+                                    <th class="text-center">Prize</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,6 +103,9 @@
                                         {% endif %}
                                     </td>
                                     <td><strong class="fs-5">{{ player_data.player.name }}</strong></td>
+                                    <td class="text-center">
+                                    <span class="badge bg-primary">{{ player_data.player.handicap }}</span>
+                                </td>
                                     <td>{{ player_data.day_scores[0] or '-' }}</td>
                                     <td>{{ player_data.day_scores[1] or '-' }}</td>
                                     <td>{{ player_data.day_scores[2] or '-' }}</td>
