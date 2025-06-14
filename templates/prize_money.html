@@ -113,7 +113,11 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center py-3">
-                                        <strong class="text-success fs-4">R{{ "{:,}".format(player_data.prize) }}</strong>
+                                        {% if player_data.get('is_non_eligible', False) %}
+                                            <span class="text-muted fs-4">Not Eligible</span>
+                                        {% else %}
+                                            <strong class="text-success fs-4">R{{ "{:,}".format(player_data.prize) }}</strong>
+                                        {% endif %}
                                     </td>
                                     <td class="text-center py-3">
                                         {% if player_data.special_prizes_won > 0 %}
@@ -123,7 +127,12 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center py-3">
-                                        <strong class="text-primary fs-3">R{{ "{:,}".format(player_data.total_winnings) }}</strong>
+                                        {% if player_data.get('is_non_eligible', False) %}
+                                            <strong class="text-muted fs-3">R{{ "{:,}".format(player_data.total_winnings) }}</strong>
+                                            <br><small class="text-muted">Not Eligible</small>
+                                        {% else %}
+                                            <strong class="text-primary fs-3">R{{ "{:,}".format(player_data.total_winnings) }}</strong>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}

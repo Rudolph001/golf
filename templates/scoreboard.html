@@ -95,6 +95,9 @@
                                     </td>
                                     <td class="py-2">
                                         <strong>{{ player_data.player.name.upper() }}</strong>
+                                        {% if player_data.get('is_non_eligible', False) %}
+                                            <small class="text-muted d-block">Not Eligible for Prizes</small>
+                                        {% endif %}
                                     </td>
                                     <td class="text-center py-2">
                                         <span class="badge bg-secondary">{{ player_data.player.handicap or 0 }}</span>

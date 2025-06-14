@@ -517,6 +517,9 @@ def calculate_leaderboard(tournament_id):
     players = Player.query.filter_by(tournament_id=tournament_id).all()
     leaderboard = []
     
+    # Players who don't qualify for prize money but still show in rankings
+    non_prize_eligible_players = ['Rudolph', 'Christiaan']
+    
     for player in players:
         player_data = {
             'player': player,
@@ -595,11 +598,14 @@ def calculate_leaderboard(tournament_id):
     leaderboard.sort(key=sort_key)
     
     # Get dynamic prize distribution and assign rankings with tie handling
-    player_count = len(players)
+    # Count only prize-eligible players for prize distribution
+    prize_eligible_players = [p for p in leaderboard if p['player'].name not in non_prize_eligible_players]
+    player_count = len(prize_eligible_players)
     prize_distribution = get_prize_distribution(player_count)
     
     # Handle ties and calculate split prize money
     current_rank = 1
+    current_prize_rank = 1  # Separate counter for prize distribution
     i = 0
     
     while i < len(leaderboard):
@@ -619,42 +625,61 @@ def calculate_leaderboard(tournament_id):
             # If current player has no score, don't look for ties
             j = i + 1
         
-        # Calculate prize money for tied positions
-        if len(tied_players) > 1 and current_score is not None:
+        # Separate prize-eligible and non-eligible players in this tie group
+        prize_eligible_tied = [p for p in tied_players if p['player'].name not in non_prize_eligible_players]
+        non_eligible_tied = [p for p in tied_players if p['player'].name in non_prize_eligible_players]
+        
+        # Calculate prize money for tied positions (only for eligible players)
+        if len(prize_eligible_tied) > 1 and current_score is not None:
             # Calculate total prize money for tied positions
             total_tied_prize = 0
             positions_involved = []
-            for pos in range(current_rank, current_rank + len(tied_players)):
+            for pos in range(current_prize_rank, current_prize_rank + len(prize_eligible_tied)):
                 if pos in prize_distribution['main_prizes']:
                     total_tied_prize += prize_distribution['main_prizes'][pos]
                     positions_involved.append(pos)
             
-            # Split the prize equally among tied players (rounded down to avoid overpaying)
+            # Split the prize equally among tied eligible players
             if total_tied_prize > 0:
-                split_prize = total_tied_prize // len(tied_players)
+                split_prize = total_tied_prize // len(prize_eligible_tied)
             else:
                 split_prize = 0
             
-            # Assign same rank and split prize to all tied players
-            for player_data in tied_players:
+            # Assign same rank and split prize to all tied eligible players
+            for player_data in prize_eligible_tied:
                 player_data['rank'] = current_rank
                 player_data['prize'] = split_prize
                 player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
-                player_data['is_tied'] = True
-                player_data['tied_positions'] = positions_involved  # For debugging
-        else:
-            # Single player at this position or player with no score
-            player_data = tied_players[0]
+                player_data['is_tied'] = len(tied_players) > 1
+                player_data['tied_positions'] = positions_involved
+        elif len(prize_eligible_tied) == 1 and current_score is not None:
+            # Single eligible player at this position
+            player_data = prize_eligible_tied[0]
             player_data['rank'] = current_rank
-            if current_score is not None:
-                player_data['prize'] = prize_distribution['main_prizes'].get(current_rank, 0)
-            else:
-                player_data['prize'] = 0  # No prize for players without scores
+            player_data['prize'] = prize_distribution['main_prizes'].get(current_prize_rank, 0)
+            player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
+            player_data['is_tied'] = len(tied_players) > 1
+        elif len(prize_eligible_tied) == 1:
+            # Single eligible player with no score
+            player_data = prize_eligible_tied[0]
+            player_data['rank'] = current_rank
+            player_data['prize'] = 0
             player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
             player_data['is_tied'] = False
         
+        # Handle non-eligible players (show rank but no prize money)
+        for player_data in non_eligible_tied:
+            player_data['rank'] = current_rank
+            player_data['prize'] = 0  # No prize money for non-eligible players
+            player_data['total_winnings'] = player_data['special_prizes_won']  # Only special prizes if any
+            player_data['is_tied'] = len(tied_players) > 1
+            player_data['is_non_eligible'] = True  # Flag for display purposes
+        
         # Move to next unprocessed position
         current_rank += len(tied_players)
+        # Only advance prize rank counter for eligible players
+        if prize_eligible_tied:
+            current_prize_rank += len(prize_eligible_tied)
         i = j
     
     return leaderboard
