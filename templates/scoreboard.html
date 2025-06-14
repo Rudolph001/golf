@@ -73,6 +73,7 @@
                                     <th class="text-center py-2">DAY 3<br><small>Scramble</small></th>
                                     <th class="text-center py-2">GROSS</th>
                                     <th class="text-center py-2">NET</th>
+                                    <th class="text-center py-2">PAR</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -129,6 +130,15 @@
                                     <td class="text-center py-2">
                                         {% if player_data.net_score %}
                                             <strong class="text-success">{{ player_data.net_score }}</strong>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center py-2">
+                                        {% if player_data.par_score %}
+                                            <strong class="{% if player_data.par_score == 'E' %}text-secondary{% elif player_data.par_score.startswith('+') %}text-danger{% else %}text-success{% endif %}">
+                                                {{ player_data.par_score }}
+                                            </strong>
                                         {% else %}
                                             <span class="text-muted">-</span>
                                         {% endif %}

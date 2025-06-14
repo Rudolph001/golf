@@ -80,6 +80,7 @@
                                     <th class="text-center">Day 3</th>
                                     <th class="text-center">Gross</th>
                                     <th class="text-center">Net</th>
+                                    <th class="text-center">Par</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -121,6 +122,15 @@
                                     <td class="text-center">
                                         {% if player_data.net_score %}
                                             {{ player_data.net_score }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if player_data.par_score %}
+                                            <span class="badge {% if player_data.par_score == 'E' %}bg-secondary{% elif player_data.par_score.startswith('+') %}bg-danger{% else %}bg-success{% endif %}">
+                                                {{ player_data.par_score }}
+                                            </span>
                                         {% else %}
                                             -
                                         {% endif %}

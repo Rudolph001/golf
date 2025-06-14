@@ -525,7 +525,8 @@ def calculate_leaderboard(tournament_id):
             'total_points': 0,
             'rounds_completed': 0,
             'special_prizes_won': 0,
-            'net_score': None
+            'net_score': None,
+            'par_score': None
         }
         
         # Get scores for each day and accumulate net scores
@@ -552,11 +553,21 @@ def calculate_leaderboard(tournament_id):
                     
                     player_data['rounds_completed'] += 1
         
-        # Set the net score if player has any scores
+        # Set the net score and par score if player has any scores
         if has_any_scores and total_net_score > 0:
             player_data['net_score'] = total_net_score
+            # Calculate par score (72 is standard par for 18 holes, multiply by rounds completed)
+            total_par = 72 * player_data['rounds_completed']
+            par_difference = total_net_score - total_par
+            if par_difference == 0:
+                player_data['par_score'] = "E"  # Even par
+            elif par_difference > 0:
+                player_data['par_score'] = f"+{par_difference}"  # Over par
+            else:
+                player_data['par_score'] = str(par_difference)  # Under par (negative sign included)
         else:
             player_data['net_score'] = None
+            player_data['par_score'] = None
         
         # Calculate special prizes won by this player
         try:
