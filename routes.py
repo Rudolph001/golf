@@ -6,7 +6,7 @@ from sqlalchemy import func
 
 def get_prize_distribution(player_count):
     """Calculate dynamic prize distribution based on player count"""
-    total_available = 950000  # Reserve 50K for special prizes
+    total_available = 950000  # Reserve 50K for special prizes (950K + 50K = 1M total)
     
     if player_count <= 4:
         # For 4 or fewer players
