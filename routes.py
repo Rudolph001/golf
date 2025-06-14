@@ -4,16 +4,23 @@ from models import Tournament, Player, Round, Score, PINACLEPOINT_COURSE
 from datetime import datetime, date
 from sqlalchemy import func
 
-# Prize money distribution for 8 players
+# Prize money distribution for 8 players (Total: R1,000,000)
 PRIZE_DISTRIBUTION = {
-    1: 150000,  # 1st place
-    2: 100000,  # 2nd place
-    3: 80000,   # 3rd place
-    4: 70000,   # 4th place
-    5: 60000,   # 5th place
+    1: 300000,  # 1st place
+    2: 200000,  # 2nd place
+    3: 150000,  # 3rd place
+    4: 100000,  # 4th place
+    5: 75000,   # 5th place
     6: 50000,   # 6th place
     7: 40000,   # 7th place
-    8: 50000,   # 8th place (extra for participation)
+    8: 35000,   # 8th place
+}
+
+# Special skill prizes
+SPECIAL_PRIZES = {
+    'longest_drive': 15000,     # Longest drive
+    'closest_hole': 15000,      # Closest to the hole
+    'most_birdies': 20000,      # Most birdies by player
 }
 
 TOURNAMENT_FORMATS = {
@@ -49,7 +56,8 @@ def player_setup():
         # Create tournament
         tournament = Tournament(
             name="The Pinicalpoint Family Champions Cup",
-            start_date=date.today()
+            start_date=date.today(),
+            total_prize_pool=1000000
         )
         db.session.add(tournament)
         db.session.flush()  # Get tournament ID
@@ -106,6 +114,7 @@ def scoreboard():
                          leaderboard=leaderboard,
                          rounds=rounds,
                          prize_distribution=PRIZE_DISTRIBUTION,
+                         special_prizes=SPECIAL_PRIZES,
                          tournament_formats=TOURNAMENT_FORMATS)
 
 @app.route('/admin')

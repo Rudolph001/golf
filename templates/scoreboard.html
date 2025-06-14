@@ -152,14 +152,34 @@
         <div class="col-12">
             <div class="card bg-dark text-light">
                 <div class="card-body text-center py-3">
-                    <h4 class="mb-2">Prize Distribution</h4>
-                    <div class="row">
+                    <h4 class="mb-3">Prize Distribution</h4>
+                    
+                    <!-- Main Tournament Prizes -->
+                    <h5 class="text-warning mb-2">Tournament Placing</h5>
+                    <div class="row mb-3">
                         {% for rank, prize in prize_distribution.items() %}
                         <div class="col-md-3 col-6 mb-2">
                             <strong>{{ rank }}{% if rank == 1 %}st{% elif rank == 2 %}nd{% elif rank == 3 %}rd{% else %}th{% endif %} Place:</strong>
                             <span class="text-success ms-1">R{{ "{:,}".format(prize) }}</span>
                         </div>
                         {% endfor %}
+                    </div>
+
+                    <!-- Special Skill Prizes -->
+                    <h5 class="text-warning mb-2">Special Skill Prizes</h5>
+                    <div class="row">
+                        <div class="col-md-4 col-12 mb-2">
+                            <strong><i class="fas fa-golf-ball me-2"></i>Longest Drive:</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(special_prizes.longest_drive) }}</span>
+                        </div>
+                        <div class="col-md-4 col-12 mb-2">
+                            <strong><i class="fas fa-target me-2"></i>Closest to Hole:</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(special_prizes.closest_hole) }}</span>
+                        </div>
+                        <div class="col-md-4 col-12 mb-2">
+                            <strong><i class="fas fa-award me-2"></i>Most Birdies:</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(special_prizes.most_birdies) }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
