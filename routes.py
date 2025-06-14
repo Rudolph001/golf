@@ -581,12 +581,11 @@ def calculate_leaderboard(tournament_id):
         current_score = leaderboard[i]['net_score']
         current_points = leaderboard[i]['total_points']
         
-        # Look for tied players (must have same net score and same total points)
+        # Look for tied players (same net score only)
         j = i + 1
         while (j < len(leaderboard) and 
                current_score is not None and
-               leaderboard[j]['net_score'] == current_score and 
-               leaderboard[j]['total_points'] == current_points):  # Only tie if both have valid scores
+               leaderboard[j]['net_score'] == current_score):  # Only need same net score for tie
             tied_players.append(leaderboard[j])
             j += 1
         
