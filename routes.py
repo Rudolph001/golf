@@ -576,21 +576,24 @@ def calculate_leaderboard(tournament_id):
     i = 0
     
     while i < len(leaderboard):
-        # Find all players with the same score (tied players)
+        # Find all players with the same net score (tied players)
         tied_players = [leaderboard[i]]
         current_score = leaderboard[i]['net_score']
-        current_points = leaderboard[i]['total_points']
         
-        # Look for tied players (same net score only)
-        j = i + 1
-        while (j < len(leaderboard) and 
-               current_score is not None and
-               leaderboard[j]['net_score'] == current_score):  # Only need same net score for tie
-            tied_players.append(leaderboard[j])
-            j += 1
+        # Look for tied players - only check net score, and handle None values properly
+        if current_score is not None:
+            j = i + 1
+            while (j < len(leaderboard) and 
+                   leaderboard[j]['net_score'] is not None and
+                   leaderboard[j]['net_score'] == current_score):
+                tied_players.append(leaderboard[j])
+                j += 1
+        else:
+            # If current player has no score, don't look for ties
+            j = i + 1
         
         # Calculate prize money for tied positions
-        if len(tied_players) > 1:
+        if len(tied_players) > 1 and current_score is not None:
             # Calculate total prize money for tied positions
             total_tied_prize = 0
             for pos in range(current_rank, current_rank + len(tied_players)):
@@ -606,10 +609,13 @@ def calculate_leaderboard(tournament_id):
                 player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
                 player_data['is_tied'] = True
         else:
-            # Single player at this position
+            # Single player at this position or player with no score
             player_data = tied_players[0]
             player_data['rank'] = current_rank
-            player_data['prize'] = prize_distribution['main_prizes'].get(current_rank, 0)
+            if current_score is not None:
+                player_data['prize'] = prize_distribution['main_prizes'].get(current_rank, 0)
+            else:
+                player_data['prize'] = 0  # No prize for players without scores
             player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
             player_data['is_tied'] = False
         
