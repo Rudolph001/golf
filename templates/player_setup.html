@@ -1,3 +1,7 @@
+` tags.
+
+```python
+<replit_final_file>
 {% extends "base.html" %}
 
 {% block title %}Tournament Setup - Pinaclepoint Golf{% endblock %}
@@ -254,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             playerCount++;
             addPlayerRow(playerCount);
             updatePlayerCount();
-            
+
             if (playerCount >= 20) {
                 addPlayerBtn.style.display = 'none';
             }
@@ -269,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
             playerCount--;
             updatePlayerCount();
             renumberPlayers();
-            
+
             if (playerCount < 20) {
                 addPlayerBtn.style.display = 'inline-block';
             }
@@ -328,16 +332,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const nameInput = entry.querySelector('input[name^="player_"]');
             const handicapLabel = entry.querySelector('label[for^="handicap_"]');
             const handicapInput = entry.querySelector('input[name^="handicap_"]');
-            
+
             label.setAttribute('for', `player_${number}`);
             label.innerHTML = `<i class="fas fa-user me-1"></i>Player ${number}`;
             nameInput.setAttribute('id', `player_${number}`);
             nameInput.setAttribute('name', `player_${number}`);
-            
+
             handicapLabel.setAttribute('for', `handicap_${number}`);
             handicapInput.setAttribute('id', `handicap_${number}`);
             handicapInput.setAttribute('name', `handicap_${number}`);
         });
     }
 });
+</script>
+<script>
+    function addPlayer() {
+        // You can add your logic here to add a new player dynamically.
+        // For example, you can clone an existing player input field and append it to the form.
+        alert('Add player functionality needs implementation.');
+    }
 </script>

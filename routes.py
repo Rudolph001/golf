@@ -140,12 +140,23 @@ def player_setup():
         db.session.add(tournament)
         db.session.flush()  # Get tournament ID
         
-        # Create players
+        # Create players - handle dynamic player count
         player_names = []
-        for i in range(1, 9):  # 8 players
+        for i in range(1, 21):  # Check up to 20 players
             name = request.form.get(f'player_{i}')
+            handicap = request.form.get(f'handicap_{i}', 18)
             if name and name.strip():
-                player = Player(name=name.strip(), tournament_id=tournament.id)
+                try:
+                    handicap_value = int(handicap) if handicap else 18
+                    handicap_value = max(0, min(36, handicap_value))  # Ensure handicap is between 0-36
+                except (ValueError, TypeError):
+                    handicap_value = 18
+                
+                player = Player(
+                    name=name.strip(), 
+                    tournament_id=tournament.id,
+                    handicap=handicap_value
+                )
                 db.session.add(player)
                 player_names.append(name.strip())
         
