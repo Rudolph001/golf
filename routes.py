@@ -294,46 +294,61 @@ def day_scorecard(day):
 
 @app.route('/special_prizes')
 def special_prizes():
-    """Manage special prizes (longest drive, closest to hole, most birdies)"""
+    """Manage daily special prizes (longest drive, closest to hole, most birdies)"""
     tournament = Tournament.query.first()
     if not tournament:
         return redirect(url_for('player_setup'))
     
     players = Player.query.filter_by(tournament_id=tournament.id).all()
+    rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
     
-    # Get existing special prize winners
-    special_prizes = {}
-    for prize_type in ['longest_drive', 'closest_hole', 'most_birdies']:
-        prize = SpecialPrize.query.filter_by(tournament_id=tournament.id, prize_type=prize_type).first()
-        special_prizes[prize_type] = prize
+    # Get existing special prize winners organized by day
+    daily_special_prizes = {}
+    for day in [1, 2, 3]:
+        daily_special_prizes[day] = {}
+        for prize_type in ['longest_drive', 'closest_hole', 'most_birdies']:
+            prize = SpecialPrize.query.filter_by(
+                tournament_id=tournament.id, 
+                day=day, 
+                prize_type=prize_type
+            ).first()
+            daily_special_prizes[day][prize_type] = prize
     
-    return render_template('special_prizes.html',
+    return render_template('daily_special_prizes.html',
                          tournament=tournament,
                          players=players,
-                         special_prizes=special_prizes)
+                         rounds=rounds,
+                         daily_special_prizes=daily_special_prizes,
+                         tournament_formats=TOURNAMENT_FORMATS)
 
 @app.route('/award_special_prize', methods=['POST'])
 def award_special_prize():
-    """Award a special prize to a player"""
+    """Award a daily special prize to a player"""
     tournament = Tournament.query.first()
     if not tournament:
         return redirect(url_for('player_setup'))
     
+    day = request.form.get('day')
     prize_type = request.form.get('prize_type')
     player_id = request.form.get('player_id')
     
-    if not prize_type or not player_id:
-        flash('Please select both prize type and player.', 'error')
+    if not day or not prize_type or not player_id:
+        flash('Please select day, prize type and player.', 'error')
         return redirect(url_for('special_prizes'))
     
-    # Remove existing prize of this type
-    existing_prize = SpecialPrize.query.filter_by(tournament_id=tournament.id, prize_type=prize_type).first()
+    # Remove existing prize of this type for this day
+    existing_prize = SpecialPrize.query.filter_by(
+        tournament_id=tournament.id, 
+        day=int(day), 
+        prize_type=prize_type
+    ).first()
     if existing_prize:
         db.session.delete(existing_prize)
     
     # Create new prize
     new_prize = SpecialPrize(
         tournament_id=tournament.id,
+        day=int(day),
         prize_type=prize_type,
         player_id=int(player_id)
     )
@@ -341,7 +356,8 @@ def award_special_prize():
     db.session.commit()
     
     player = Player.query.get(player_id)
-    flash(f'{prize_type.replace("_", " ").title()} prize awarded to {player.name}!', 'success')
+    day_name = TOURNAMENT_FORMATS[int(day)]['name']
+    flash(f'Day {day} ({day_name}) {prize_type.replace("_", " ").title()} prize awarded to {player.name}!', 'success')
     
     return redirect(url_for('special_prizes'))
 

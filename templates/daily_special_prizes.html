@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Special Prizes - Pinaclepoint Golf{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Daily Special Prizes Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h1 class="card-title mb-0">
+                        <i class="fas fa-award me-2"></i>
+                        Daily Special Skill Prizes
+                    </h1>
+                    <p class="card-text mb-0">Award R50,000 prizes for special achievements each day</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prize Management by Day -->
+    {% for day in [1, 2, 3] %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        Day {{ day }}: {{ tournament_formats[day].name }}
+                        <span class="badge bg-light text-dark ms-2">R150,000 Daily Total</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% set prize_info = {
+                            'longest_drive': {'name': 'Longest Drive', 'icon': 'fas fa-golf-ball', 'description': 'Furthest drive of the day'},
+                            'closest_hole': {'name': 'Closest to the Hole', 'icon': 'fas fa-target', 'description': 'Closest ball to the pin'},
+                            'most_birdies': {'name': 'Most Birdies', 'icon': 'fas fa-trophy', 'description': 'Most birdies scored in the day'}
+                        } %}
+                        
+                        {% for prize_type, info in prize_info.items() %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="{{ info.icon }} me-2"></i>
+                                        {{ info.name }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text small">{{ info.description }}</p>
+                                    <p class="text-success mb-2">
+                                        <strong>Prize: R50,000</strong>
+                                    </p>
+                                    
+                                    {% if daily_special_prizes[day][prize_type] %}
+                                    <div class="alert alert-success py-2">
+                                        <small><strong>Winner:</strong> {{ daily_special_prizes[day][prize_type].player.name }}</small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <form method="POST" action="{{ url_for('award_special_prize') }}">
+                                        <input type="hidden" name="day" value="{{ day }}">
+                                        <input type="hidden" name="prize_type" value="{{ prize_type }}">
+                                        <div class="mb-2">
+                                            <select name="player_id" class="form-select form-select-sm" required>
+                                                <option value="">Choose player...</option>
+                                                {% for player in players %}
+                                                <option value="{{ player.id }}" 
+                                                        {% if daily_special_prizes[day][prize_type] and daily_special_prizes[day][prize_type].player_id == player.id %}selected{% endif %}>
+                                                    {{ player.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                                            <i class="fas fa-award me-1"></i>
+                                            Award Prize
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i>Prize Summary</h5>
+                <ul class="mb-0">
+                    <li><strong>Daily Special Prizes:</strong> R150,000 per day × 3 days = R450,000</li>
+                    <li><strong>Main Tournament Prizes:</strong> R550,000 (distributed by final ranking)</li>
+                    <li><strong>Total Prize Pool:</strong> R1,000,000</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-lg me-3">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Admin Panel
+            </a>
+            <a href="{{ url_for('scoreboard') }}" class="btn btn-success btn-lg">
+                <i class="fas fa-trophy me-2"></i>
+                View Scoreboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

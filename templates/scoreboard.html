@@ -165,20 +165,28 @@
                         {% endfor %}
                     </div>
 
-                    <!-- Special Skill Prizes -->
-                    <h5 class="text-warning mb-2">Special Skill Prizes</h5>
+                    <!-- Daily Special Skill Prizes -->
+                    <h5 class="text-warning mb-2">Daily Special Skill Prizes</h5>
                     <div class="row">
                         <div class="col-md-4 col-12 mb-2">
-                            <strong><i class="fas fa-golf-ball me-2"></i>Longest Drive:</strong>
-                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.special_prizes.longest_drive) }}</span>
+                            <strong><i class="fas fa-golf-ball me-2"></i>Longest Drive (per day):</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.longest_drive) }}</span>
                         </div>
                         <div class="col-md-4 col-12 mb-2">
-                            <strong><i class="fas fa-target me-2"></i>Closest to Hole:</strong>
-                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.special_prizes.closest_hole) }}</span>
+                            <strong><i class="fas fa-target me-2"></i>Closest to Hole (per day):</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.closest_hole) }}</span>
                         </div>
                         <div class="col-md-4 col-12 mb-2">
-                            <strong><i class="fas fa-award me-2"></i>Most Birdies:</strong>
-                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.special_prizes.most_birdies) }}</span>
+                            <strong><i class="fas fa-award me-2"></i>Most Birdies (per day):</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(prize_distribution.daily_special_prizes.day_1.most_birdies) }}</span>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Each prize awarded daily across 3 days = R450,000 total special prizes
+                            </small>
                         </div>
                     </div>
                 </div>
