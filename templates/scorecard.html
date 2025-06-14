@@ -75,6 +75,22 @@
                                         <td class="text-center">4th hardest</td>
                                         <td class="text-center bg-warning">-</td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Gross Score</strong></td>
+                                        {% for hole in range(1, 10) %}
+                                        <td class="text-center">
+                                            <input type="number" 
+                                                   name="hole_{{ hole }}" 
+                                                   value="{{ score.get_hole_score(hole) or '' }}"
+                                                   class="form-control text-center score-input"
+                                                   min="1" max="12"
+                                                   placeholder="-">
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">
+                                            <strong id="front-total">-</strong>
+                                        </td>
+                                    </tr>
                                     <tr class="table-light">
                                         <td><strong>Handicap Strokes</strong></td>
                                         {% set handicap_strokes = score._distribute_handicap_strokes(player.handicap) %}
@@ -92,20 +108,15 @@
                                             {{ front_strokes if front_strokes > 0 else '-' }}
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td><strong>Score</strong></td>
+                                    <tr class="table-success">
+                                        <td><strong>Net Score</strong></td>
                                         {% for hole in range(1, 10) %}
                                         <td class="text-center">
-                                            <input type="number" 
-                                                   name="hole_{{ hole }}" 
-                                                   value="{{ score.get_hole_score(hole) or '' }}"
-                                                   class="form-control text-center score-input"
-                                                   min="1" max="12"
-                                                   placeholder="-">
+                                            <span class="net-score" data-hole="{{ hole }}">-</span>
                                         </td>
                                         {% endfor %}
                                         <td class="text-center bg-warning">
-                                            <strong id="front-total">-</strong>
+                                            <strong id="front-net-total">-</strong>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -156,6 +167,22 @@
                                         <td class="text-center">7th hardest</td>
                                         <td class="text-center bg-warning">-</td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Gross Score</strong></td>
+                                        {% for hole in range(10, 19) %}
+                                        <td class="text-center">
+                                            <input type="number" 
+                                                   name="hole_{{ hole }}" 
+                                                   value="{{ score.get_hole_score(hole) or '' }}"
+                                                   class="form-control text-center score-input"
+                                                   min="1" max="12"
+                                                   placeholder="-">
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">
+                                            <strong id="back-total">-</strong>
+                                        </td>
+                                    </tr>
                                     <tr class="table-light">
                                         <td><strong>Handicap Strokes</strong></td>
                                         {% for hole in range(10, 19) %}
@@ -172,20 +199,15 @@
                                             {{ back_strokes if back_strokes > 0 else '-' }}
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td><strong>Score</strong></td>
+                                    <tr class="table-success">
+                                        <td><strong>Net Score</strong></td>
                                         {% for hole in range(10, 19) %}
                                         <td class="text-center">
-                                            <input type="number" 
-                                                   name="hole_{{ hole }}" 
-                                                   value="{{ score.get_hole_score(hole) or '' }}"
-                                                   class="form-control text-center score-input"
-                                                   min="1" max="12"
-                                                   placeholder="-">
+                                            <span class="net-score" data-hole="{{ hole }}">-</span>
                                         </td>
                                         {% endfor %}
                                         <td class="text-center bg-warning">
-                                            <strong id="back-total">-</strong>
+                                            <strong id="back-net-total">-</strong>
                                         </td>
                                     </tr>
                                 </tbody>

@@ -1,5 +1,35 @@
 // Golf Tournament Scorecard JavaScript
 
+function distributeHandicapStrokes(handicap) {
+    // Hole handicap ratings (difficulty order)
+    const holeHandicaps = {
+        1: 12, 2: 8, 3: 16, 4: 2, 5: 18, 6: 10, 7: 14, 8: 6, 9: 4,
+        10: 11, 11: 13, 12: 5, 13: 15, 14: 9, 15: 17, 16: 1, 17: 3, 18: 7
+    };
+    
+    // Sort holes by difficulty (1 = hardest, 18 = easiest)
+    const sortedHoles = Object.entries(holeHandicaps).sort((a, b) => a[1] - b[1]);
+    
+    const handicapStrokes = {};
+    let remainingStrokes = handicap;
+    
+    // Distribute strokes starting with most difficult holes
+    for (const [hole, difficulty] of sortedHoles) {
+        if (remainingStrokes > 0) {
+            handicapStrokes[parseInt(hole)] = 1;
+            remainingStrokes--;
+            
+            // If handicap > 18, give second stroke to most difficult holes
+            if (remainingStrokes > 0 && handicap > 18) {
+                handicapStrokes[parseInt(hole)] = 2;
+                remainingStrokes--;
+            }
+        }
+    }
+    
+    return handicapStrokes;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize scorecard functionality
     initializeScorecard();
@@ -41,22 +71,66 @@ function calculateTotals() {
     let backNine = 0;
     let frontCount = 0;
     let backCount = 0;
+    let frontNetTotal = 0;
+    let backNetTotal = 0;
+    
+    // Get player handicap
+    const handicapBadge = document.querySelector('.badge.bg-light.text-dark');
+    let handicap = 0;
+    if (handicapBadge) {
+        const handicapText = handicapBadge.textContent;
+        const handicapMatch = handicapText.match(/\d+/);
+        if (handicapMatch) {
+            handicap = parseInt(handicapMatch[0]);
+        }
+    }
+    
+    // Handicap distribution based on hole difficulty
+    const handicapStrokes = distributeHandicapStrokes(handicap);
     
     // Calculate front nine (holes 1-9)
     for (let i = 1; i <= 9; i++) {
         const input = document.querySelector(`input[name="hole_${i}"]`);
+        const netScoreSpan = document.querySelector(`.net-score[data-hole="${i}"]`);
+        
         if (input && input.value && !isNaN(input.value)) {
-            frontNine += parseInt(input.value);
+            const grossScore = parseInt(input.value);
+            frontNine += grossScore;
             frontCount++;
+            
+            // Calculate net score (gross - handicap strokes for this hole)
+            const holeHandicapStrokes = handicapStrokes[i] || 0;
+            const netScore = grossScore - holeHandicapStrokes;
+            frontNetTotal += netScore;
+            
+            if (netScoreSpan) {
+                netScoreSpan.textContent = netScore;
+            }
+        } else if (netScoreSpan) {
+            netScoreSpan.textContent = '-';
         }
     }
     
     // Calculate back nine (holes 10-18)
     for (let i = 10; i <= 18; i++) {
         const input = document.querySelector(`input[name="hole_${i}"]`);
+        const netScoreSpan = document.querySelector(`.net-score[data-hole="${i}"]`);
+        
         if (input && input.value && !isNaN(input.value)) {
-            backNine += parseInt(input.value);
+            const grossScore = parseInt(input.value);
+            backNine += grossScore;
             backCount++;
+            
+            // Calculate net score (gross - handicap strokes for this hole)
+            const holeHandicapStrokes = handicapStrokes[i] || 0;
+            const netScore = grossScore - holeHandicapStrokes;
+            backNetTotal += netScore;
+            
+            if (netScoreSpan) {
+                netScoreSpan.textContent = netScore;
+            }
+        } else if (netScoreSpan) {
+            netScoreSpan.textContent = '-';
         }
     }
     
@@ -70,6 +144,18 @@ function calculateTotals() {
     const backTotal = document.getElementById('back-total');
     if (backTotal) {
         backTotal.textContent = backCount > 0 ? backNine : '-';
+    }
+    
+    // Update front nine net total
+    const frontNetTotalElement = document.getElementById('front-net-total');
+    if (frontNetTotalElement) {
+        frontNetTotalElement.textContent = frontCount > 0 ? frontNetTotal : '-';
+    }
+    
+    // Update back nine net total
+    const backNetTotalElement = document.getElementById('back-net-total');
+    if (backNetTotalElement) {
+        backNetTotalElement.textContent = backCount > 0 ? backNetTotal : '-';
     }
     
     // Update overall totals
