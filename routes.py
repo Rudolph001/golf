@@ -4,17 +4,44 @@ from models import Tournament, Player, Round, Score, PINACLEPOINT_COURSE
 from datetime import datetime, date
 from sqlalchemy import func
 
-# Prize money distribution for 8 players (Total: R1,000,000)
-PRIZE_DISTRIBUTION = {
-    1: 300000,  # 1st place
-    2: 200000,  # 2nd place
-    3: 150000,  # 3rd place
-    4: 100000,  # 4th place
-    5: 75000,   # 5th place
-    6: 50000,   # 6th place
-    7: 40000,   # 7th place
-    8: 35000,   # 8th place
-}
+def get_prize_distribution(player_count):
+    """Calculate dynamic prize distribution based on player count"""
+    total_available = 950000  # Reserve 50K for special prizes
+    
+    if player_count <= 4:
+        # For 4 or fewer players
+        return {
+            1: int(total_available * 0.50),  # 50%
+            2: int(total_available * 0.30),  # 30%
+            3: int(total_available * 0.15),  # 15%
+            4: int(total_available * 0.05),  # 5%
+        }
+    elif player_count <= 8:
+        # Original 8-player distribution
+        return {
+            1: 300000, 2: 200000, 3: 150000, 4: 100000,
+            5: 75000, 6: 50000, 7: 40000, 8: 25000,
+        }
+    else:
+        # For more than 8 players, distribute more evenly
+        prizes = {}
+        # Top 3 get larger portions
+        prizes[1] = int(total_available * 0.30)  # 30%
+        prizes[2] = int(total_available * 0.20)  # 20%
+        prizes[3] = int(total_available * 0.15)  # 15%
+        
+        # Remaining 35% distributed among other players
+        remaining = total_available - sum(prizes.values())
+        remaining_players = player_count - 3
+        
+        if remaining_players > 0:
+            # Use diminishing returns for positions 4+
+            for pos in range(4, player_count + 1):
+                if pos <= player_count // 2:  # Top half gets prizes
+                    share = remaining / (remaining_players * 1.5) * (remaining_players - (pos - 4)) / remaining_players
+                    prizes[pos] = max(int(share), 5000)  # Minimum R5,000
+        
+        return prizes
 
 # Special skill prizes
 SPECIAL_PRIZES = {
@@ -62,12 +89,16 @@ def player_setup():
         db.session.add(tournament)
         db.session.flush()  # Get tournament ID
 
-        # Create players
+        # Create players - dynamic count
         player_names = []
-        for i in range(1, 9):  # 8 players
+        i = 1
+        while True:
             name = request.form.get(f'player_{i}')
+            if not name:
+                break
+            
             handicap = request.form.get(f'handicap_{i}', 18)
-            if name and name.strip():
+            if name.strip():
                 try:
                     handicap_value = int(handicap) if handicap else 18
                     handicap_value = max(0, min(36, handicap_value))  # Ensure handicap is between 0-36
@@ -77,9 +108,14 @@ def player_setup():
                 player = Player(name=name.strip(), tournament_id=tournament.id, handicap=handicap_value)
                 db.session.add(player)
                 player_names.append(name.strip())
+            i += 1
 
-        if len(player_names) != 8:
-            flash('Please enter exactly 8 player names', 'error')
+        if len(player_names) < 4:
+            flash('Please enter at least 4 player names', 'error')
+            return render_template('player_setup.html')
+        
+        if len(player_names) > 20:
+            flash('Maximum 20 players allowed', 'error')
             return render_template('player_setup.html')
 
         # Create rounds for 3 days
@@ -109,11 +145,12 @@ def scoreboard():
     leaderboard = calculate_leaderboard(tournament.id)
     rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
 
+    prize_distribution = get_prize_distribution(len(leaderboard)) if leaderboard else {}
     return render_template('scoreboard.html',
                          tournament=tournament,
                          leaderboard=leaderboard,
                          rounds=rounds,
-                         prize_distribution=PRIZE_DISTRIBUTION,
+                         prize_distribution=prize_distribution,
                          special_prizes=SPECIAL_PRIZES,
                          tournament_formats=TOURNAMENT_FORMATS)
 
@@ -216,9 +253,10 @@ def calculate_leaderboard(tournament_id):
     leaderboard.sort(key=lambda x: (-x['total_points'], x['total_net_score'], x['total_score'], -x['rounds_completed']))
 
     # Assign rankings and prize money
+    prize_distribution = get_prize_distribution(len(leaderboard))
     for i, player_data in enumerate(leaderboard):
         player_data['rank'] = i + 1
-        player_data['prize'] = PRIZE_DISTRIBUTION.get(i + 1, 0)
+        player_data['prize'] = prize_distribution.get(i + 1, 0)
 
     return leaderboard
 

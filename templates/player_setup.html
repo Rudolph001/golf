@@ -80,9 +80,10 @@
                 </div>
                 <div class="card-body">
                     <form method="POST">
-                        <div class="row">
+                        <div id="players-container">
+                            <!-- Initial 8 players -->
                             {% for i in range(1, 9) %}
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-3 player-entry">
                                 <div class="row">
                                     <div class="col-8">
                                         <label for="player_{{ i }}" class="form-label">
@@ -95,7 +96,7 @@
                                                placeholder="Enter player name"
                                                required>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-3">
                                         <label for="handicap_{{ i }}" class="form-label">
                                             <i class="fas fa-golf-ball me-1"></i>Handicap
                                         </label>
@@ -109,12 +110,31 @@
                                                value="18"
                                                required>
                                     </div>
+                                    <div class="col-1 d-flex align-items-end">
+                                        {% if i > 8 %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-player">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
 
+                        <div class="row mb-3">
+                            <div class="col-12 text-center">
+                                <button type="button" id="add-player" class="btn btn-outline-primary">
+                                    <i class="fas fa-plus me-2"></i>Add Another Player
+                                </button>
+                                <small class="d-block text-muted mt-1">Minimum 4 players, maximum 20 players</small>
+                            </div>
+                        </div>
+
                         <div class="text-center mt-4">
+                            <div class="mb-3">
+                                <span class="badge bg-info fs-6" id="player-count">Players: 8</span>
+                            </div>
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-play me-2"></i>
                                 Start Tournament
@@ -219,3 +239,105 @@
     </div>
 </div>
 {% endblock %}
+
+
+<script>
+let playerCount = 8;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addPlayerBtn = document.getElementById('add-player');
+    const playersContainer = document.getElementById('players-container');
+    const playerCountBadge = document.getElementById('player-count');
+
+    addPlayerBtn.addEventListener('click', function() {
+        if (playerCount < 20) {
+            playerCount++;
+            addPlayerRow(playerCount);
+            updatePlayerCount();
+            
+            if (playerCount >= 20) {
+                addPlayerBtn.style.display = 'none';
+            }
+        }
+    });
+
+    // Handle remove player buttons
+    playersContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-player') || e.target.parentElement.classList.contains('remove-player')) {
+            const playerEntry = e.target.closest('.player-entry');
+            playerEntry.remove();
+            playerCount--;
+            updatePlayerCount();
+            renumberPlayers();
+            
+            if (playerCount < 20) {
+                addPlayerBtn.style.display = 'inline-block';
+            }
+        }
+    });
+
+    function addPlayerRow(number) {
+        const newRow = document.createElement('div');
+        newRow.className = 'col-md-6 mb-3 player-entry';
+        newRow.innerHTML = `
+            <div class="row">
+                <div class="col-8">
+                    <label for="player_${number}" class="form-label">
+                        <i class="fas fa-user me-1"></i>Player ${number}
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="player_${number}" 
+                           name="player_${number}"
+                           placeholder="Enter player name"
+                           required>
+                </div>
+                <div class="col-3">
+                    <label for="handicap_${number}" class="form-label">
+                        <i class="fas fa-golf-ball me-1"></i>Handicap
+                    </label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="handicap_${number}" 
+                           name="handicap_${number}"
+                           placeholder="0-36"
+                           min="0" 
+                           max="36"
+                           value="18"
+                           required>
+                </div>
+                <div class="col-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-player">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        playersContainer.appendChild(newRow);
+    }
+
+    function updatePlayerCount() {
+        playerCountBadge.textContent = `Players: ${playerCount}`;
+    }
+
+    function renumberPlayers() {
+        const playerEntries = playersContainer.querySelectorAll('.player-entry');
+        playerEntries.forEach((entry, index) => {
+            const number = index + 1;
+            const label = entry.querySelector('label[for^="player_"]');
+            const nameInput = entry.querySelector('input[name^="player_"]');
+            const handicapLabel = entry.querySelector('label[for^="handicap_"]');
+            const handicapInput = entry.querySelector('input[name^="handicap_"]');
+            
+            label.setAttribute('for', `player_${number}`);
+            label.innerHTML = `<i class="fas fa-user me-1"></i>Player ${number}`;
+            nameInput.setAttribute('id', `player_${number}`);
+            nameInput.setAttribute('name', `player_${number}`);
+            
+            handicapLabel.setAttribute('for', `handicap_${number}`);
+            handicapInput.setAttribute('id', `handicap_${number}`);
+            handicapInput.setAttribute('name', `handicap_${number}`);
+        });
+    }
+});
+</script>
