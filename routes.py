@@ -5,7 +5,7 @@ from datetime import datetime, date
 from sqlalchemy import func
 
 def get_prize_distribution(player_count):
-    """Calculate dynamic prize distribution with strict descending order"""
+    """Calculate dynamic prize distribution with strict descending order and round values"""
     # Total R1,000,000 - R450,000 for daily special prizes (R50k x 3 prizes x 3 days)
     total_main_prize = 550000  # R550,000 for main tournament prizes
     daily_special_prizes = 450000  # R450,000 for daily special prizes (R150k per day)
@@ -20,65 +20,63 @@ def get_prize_distribution(player_count):
             }
         }
     
-    # Define percentage distribution that ensures descending order
+    # Define round prize amounts based on player count
     if player_count == 1:
-        percentages = [100]
+        prizes = {1: 550000}
     elif player_count == 2:
-        percentages = [60, 40]
+        prizes = {1: 350000, 2: 200000}
     elif player_count == 3:
-        percentages = [50, 30, 20]
+        prizes = {1: 250000, 2: 175000, 3: 125000}
     elif player_count == 4:
-        percentages = [35, 25, 22, 18]
+        prizes = {1: 200000, 2: 150000, 3: 125000, 4: 75000}
     elif player_count == 5:
-        percentages = [30, 22, 18, 16, 14]
+        prizes = {1: 175000, 2: 135000, 3: 100000, 4: 75000, 5: 65000}
     elif player_count == 6:
-        percentages = [28, 20, 16, 14, 12, 10]
+        prizes = {1: 150000, 2: 120000, 3: 90000, 4: 75000, 5: 65000, 6: 50000}
     elif player_count == 7:
-        percentages = [25, 18, 15, 13, 11, 10, 8]
+        prizes = {1: 140000, 2: 110000, 3: 85000, 4: 70000, 5: 60000, 6: 50000, 7: 35000}
     elif player_count == 8:
-        percentages = [25, 18, 13, 11, 9, 8, 7, 9]
+        prizes = {1: 140000, 2: 100000, 3: 75000, 4: 65000, 5: 50000, 6: 45000, 7: 40000, 8: 35000}
     else:
-        # For more than 8 players: top positions get fixed percentages, rest descend
-        percentages = [25, 18, 13, 10, 8, 7, 6, 5]  # Top 8 positions
-        remaining_percentage = 8  # 8% for remaining players
+        # For more than 8 players: predefined amounts for top 8, then descending amounts
+        base_prizes = {1: 140000, 2: 100000, 3: 75000, 4: 65000, 5: 50000, 6: 45000, 7: 40000, 8: 35000}
+        prizes = base_prizes.copy()
         
-        # Distribute remaining percentage in descending order
+        # Calculate remaining prize money
+        used_prize_money = sum(base_prizes.values())
+        remaining_prize_money = total_main_prize - used_prize_money
         remaining_players = player_count - 8
-        if remaining_players > 0:
-            base_percentage = remaining_percentage / remaining_players
-            for i in range(remaining_players):
-                # Each position gets slightly less than the previous
-                reduction = i * 0.2  # 0.2% reduction per position
-                percentages.append(max(1, int(base_percentage - reduction)))
-    
-    # Calculate actual prize amounts
-    prizes = {}
-    for i in range(player_count):
-        position = i + 1
-        percentage = percentages[i] if i < len(percentages) else 0.5
-        amount = int(total_main_prize * percentage / 100)
-        prizes[position] = amount
-    
-    # Force strict descending order - sort amounts and reassign
-    sorted_amounts = sorted(prizes.values(), reverse=True)
-    final_prizes = {}
-    
-    for i in range(player_count):
-        position = i + 1
-        final_prizes[position] = sorted_amounts[i]
-    
-    # Ensure no duplicates by reducing subsequent amounts slightly
-    previous_amount = None
-    for position in sorted(final_prizes.keys()):
-        if previous_amount is not None and final_prizes[position] >= previous_amount:
-            final_prizes[position] = previous_amount - 500  # R500 less than previous
-        previous_amount = final_prizes[position]
         
-        # Ensure minimum prize of R15,000
-        final_prizes[position] = max(15000, final_prizes[position])
+        if remaining_players > 0:
+            # Start at 30000 and decrease by 2500 for each position
+            current_amount = 30000
+            for position in range(9, player_count + 1):
+                prizes[position] = max(15000, current_amount)  # Minimum R15,000
+                current_amount -= 2500
+    
+    def round_to_nearest_500(amount):
+        """Round amounts to nearest R500 for cleaner values"""
+        return round(amount / 500) * 500
+    
+    # Round all amounts to nearest R500
+    for position in prizes:
+        prizes[position] = round_to_nearest_500(prizes[position])
+        # Ensure minimum of R15,000
+        prizes[position] = max(15000, prizes[position])
+    
+    # Ensure strict descending order
+    previous_amount = None
+    for position in sorted(prizes.keys()):
+        if previous_amount is not None and prizes[position] >= previous_amount:
+            prizes[position] = previous_amount - 2500  # R2,500 less than previous
+            prizes[position] = round_to_nearest_500(prizes[position])
+        previous_amount = prizes[position]
+        
+        # Final check for minimum
+        prizes[position] = max(15000, prizes[position])
     
     return {
-        'main_prizes': final_prizes,
+        'main_prizes': prizes,
         'daily_special_prizes': {
             'day_1': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
             'day_2': {'longest_drive': 50000, 'closest_hole': 50000, 'most_birdies': 50000},
