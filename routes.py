@@ -210,6 +210,25 @@ def scoreboard():
                          prize_distribution=prize_distribution,
                          tournament_formats=TOURNAMENT_FORMATS)
 
+@app.route('/prize_money')
+def prize_money():
+    """Prize money dashboard showing winnings and distribution"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    leaderboard = calculate_leaderboard(tournament.id)
+    
+    # Get dynamic prize distribution based on actual player count
+    player_count = len(Player.query.filter_by(tournament_id=tournament.id).all())
+    prize_distribution = get_prize_distribution(player_count)
+    
+    return render_template('prize_money.html',
+                         tournament=tournament,
+                         leaderboard=leaderboard,
+                         prize_distribution=prize_distribution,
+                         tournament_formats=TOURNAMENT_FORMATS)
+
 @app.route('/admin')
 def admin():
     """Admin panel for score management"""

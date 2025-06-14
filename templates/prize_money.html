@@ -1,0 +1,299 @@
+
+{% extends "base.html" %}
+
+{% block title %}Prize Money Dashboard - Pinaclepoint Golf{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Prize Money Header -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <h1 class="display-4 mb-2">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        PRIZE MONEY DASHBOARD
+                    </h1>
+                    <h3 class="mb-2">Tournament Winnings & Distribution</h3>
+                    <p class="text-white mb-1">
+                        <i class="fas fa-trophy me-2"></i>
+                        Total Prize Pool: R{{ "{:,}".format(1000000) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prize Pool Breakdown -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        PRIZE POOL BREAKDOWN
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h4 class="text-success mb-2">
+                                        <i class="fas fa-ranking-star me-2"></i>
+                                        Tournament Ranking Prizes
+                                    </h4>
+                                    <h2 class="text-success">R550,000</h2>
+                                    <p class="text-muted mb-0">Based on final leaderboard position</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h4 class="text-warning mb-2">
+                                        <i class="fas fa-star me-2"></i>
+                                        Daily Special Prizes
+                                    </h4>
+                                    <h2 class="text-warning">R450,000</h2>
+                                    <p class="text-muted mb-0">15 prizes × R30,000 each across 3 days</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Prize Money Standings -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        CURRENT PRIZE MONEY STANDINGS
+                    </h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead class="table-success">
+                                <tr>
+                                    <th class="text-center py-3">RANK</th>
+                                    <th class="py-3">PLAYER NAME</th>
+                                    <th class="text-center py-3">NET SCORE</th>
+                                    <th class="text-center py-3 bg-success text-white">TOURNAMENT<br>PRIZE</th>
+                                    <th class="text-center py-3 bg-warning text-dark">SPECIAL<br>PRIZES</th>
+                                    <th class="text-center py-3 bg-primary text-white">TOTAL<br>WINNINGS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player_data in leaderboard %}
+                                <tr class="{% if player_data.rank <= 3 %}table-warning{% endif %}">
+                                    <td class="text-center py-3">
+                                        {% if player_data.rank == 1 %}
+                                            <span class="badge bg-warning text-dark fs-5 px-3 py-2">
+                                                <i class="fas fa-crown me-1"></i>1st
+                                            </span>
+                                        {% elif player_data.rank == 2 %}
+                                            <span class="badge bg-secondary fs-5 px-3 py-2">
+                                                <i class="fas fa-medal me-1"></i>2nd
+                                            </span>
+                                        {% elif player_data.rank == 3 %}
+                                            <span class="badge bg-warning text-dark fs-5 px-3 py-2">
+                                                <i class="fas fa-medal me-1"></i>3rd
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-primary fs-5 px-3 py-2">{{ player_data.rank }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3">
+                                        <h5 class="mb-0">{{ player_data.player.name.upper() }}</h5>
+                                        <small class="text-muted">Handicap: {{ player_data.player.handicap or 0 }}</small>
+                                    </td>
+                                    <td class="text-center py-3">
+                                        {% if player_data.net_score %}
+                                            <span class="badge bg-info fs-6 px-3 py-2">{{ player_data.net_score }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center py-3">
+                                        <h4 class="text-success mb-0">R{{ "{:,}".format(player_data.prize) }}</h4>
+                                    </td>
+                                    <td class="text-center py-3">
+                                        {% if player_data.special_prizes_won > 0 %}
+                                            <h4 class="text-warning mb-0">R{{ "{:,}".format(player_data.special_prizes_won) }}</h4>
+                                        {% else %}
+                                            <h4 class="text-muted mb-0">R0</h4>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center py-3">
+                                        <h3 class="text-primary mb-0">R{{ "{:,}".format(player_data.total_winnings) }}</h3>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Tournament Prize Distribution -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-trophy me-2"></i>
+                        MAIN TOURNAMENT PRIZE DISTRIBUTION
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for rank, prize in prize_distribution.main_prizes.items() %}
+                        <div class="col-lg-3 col-md-4 col-6 mb-3">
+                            <div class="card text-center border-success">
+                                <div class="card-body py-3">
+                                    <h5 class="text-success mb-2">
+                                        {% if rank == 1 %}
+                                            <i class="fas fa-crown text-warning"></i>
+                                        {% elif rank == 2 %}
+                                            <i class="fas fa-medal text-secondary"></i>
+                                        {% elif rank == 3 %}
+                                            <i class="fas fa-medal text-warning"></i>
+                                        {% else %}
+                                            <i class="fas fa-award"></i>
+                                        {% endif %}
+                                        {{ rank }}{% if rank == 1 %}st{% elif rank == 2 %}nd{% elif rank == 3 %}rd{% else %}th{% endif %} Place
+                                    </h5>
+                                    <h4 class="text-success mb-0">R{{ "{:,}".format(prize) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Special Prizes -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-star me-2"></i>
+                        DAILY SPECIAL SKILL PRIZES
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12 text-center">
+                            <h5 class="text-warning mb-3">R30,000 Each Prize • 5 Prizes Per Day • 3 Days</h5>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h6 class="text-warning mb-2">
+                                        <i class="fas fa-golf-ball me-2"></i>
+                                        Longest Drive
+                                    </h6>
+                                    <h5 class="text-success">R30,000</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h6 class="text-warning mb-2">
+                                        <i class="fas fa-target me-2"></i>
+                                        Closest to Hole
+                                    </h6>
+                                    <h5 class="text-success">R30,000</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h6 class="text-warning mb-2">
+                                        <i class="fas fa-award me-2"></i>
+                                        Most Birdies
+                                    </h6>
+                                    <h5 class="text-success">R30,000</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h6 class="text-warning mb-2">
+                                        <i class="fas fa-arrows-alt-h me-2"></i>
+                                        Straightest Drive
+                                    </h6>
+                                    <h5 class="text-success">R30,000</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h6 class="text-warning mb-2">
+                                        <i class="fas fa-bullseye me-2"></i>
+                                        Most Pars
+                                    </h6>
+                                    <h5 class="text-success">R30,000</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prize Summary Footer -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-dark text-light">
+                <div class="card-body text-center py-4">
+                    <h3 class="text-warning mb-3">
+                        <i class="fas fa-coins me-2"></i>
+                        TOTAL PRIZE POOL: R1,000,000
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="text-success">Tournament Prizes</h5>
+                            <h4 class="text-success">R550,000</h4>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="text-warning">Special Prizes</h5>
+                            <h4 class="text-warning">R450,000</h4>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="text-info">Total Distributed</h5>
+                            <h4 class="text-info">R1,000,000</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-refresh for live updates -->
+<script>
+    // Refresh the page every 30 seconds for live updates
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}
