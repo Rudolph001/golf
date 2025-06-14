@@ -476,6 +476,28 @@ def award_special_prize():
     
     return redirect(url_for('special_prizes'))
 
+@app.route('/clear_special_prizes', methods=['POST'])
+def clear_special_prizes():
+    """Clear all special prizes for a specific day or all days"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    day = request.form.get('day')
+    
+    if day == 'all':
+        # Clear all special prizes
+        SpecialPrize.query.filter_by(tournament_id=tournament.id).delete()
+        flash('All daily special prizes have been cleared!', 'success')
+    else:
+        # Clear prizes for specific day
+        SpecialPrize.query.filter_by(tournament_id=tournament.id, day=int(day)).delete()
+        day_name = TOURNAMENT_FORMATS[int(day)]['name']
+        flash(f'Day {day} ({day_name}) special prizes have been cleared!', 'success')
+    
+    db.session.commit()
+    return redirect(url_for('special_prizes'))
+
 def calculate_leaderboard(tournament_id):
     """Calculate tournament leaderboard with cumulative scores"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
