@@ -35,10 +35,11 @@ This is a Flask-based web application for managing a family golf tournament at P
 
 ### Routes (routes.py)
 - Tournament overview and leaderboard display
-- Player setup and registration
-- Admin panel for score management
-- Scorecard entry interface
-- Public scoreboard for TV display
+- Player setup and registration with dynamic prize preview
+- Admin panel for score management with clear/reset functionality
+- Scorecard entry interface with hole-by-hole tracking
+- Public scoreboard for TV display with real-time updates
+- Dynamic prize distribution calculation based on player count
 
 ### Templates
 - **Base template**: Consistent navigation and Bootstrap theming
@@ -56,7 +57,7 @@ This is a Flask-based web application for managing a family golf tournament at P
    - Day 3: Scramble (team format)
 3. **Score Entry**: Hole-by-hole score tracking through admin interface
 4. **Leaderboard Calculation**: Real-time standings based on tournament format
-5. **Prize Distribution**: Automated prize pool allocation for 8 players
+5. **Prize Distribution**: Dynamic prize pool allocation ensuring all players win money, adjusting based on actual player count
 
 ## External Dependencies
 
@@ -90,8 +91,17 @@ This is a Flask-based web application for managing a family golf tournament at P
 - Proxy fix middleware for deployment behind reverse proxy
 - Automatic table creation on application startup
 
+## Recent Changes
+- June 14, 2025: Initial setup with R600,000 prize pool
+- June 14, 2025: Updated to R1,000,000 prize pool as requested
+- June 14, 2025: Implemented dynamic prize distribution system that adjusts based on actual number of players registered
+- June 14, 2025: Fixed admin panel button functionality for clearing scores and resetting tournaments
+- June 14, 2025: Tournament name updated to "The Pinicalpoint Family Champions Cup"
+
 ## Changelog
-- June 14, 2025. Initial setup
+- June 14, 2025. Initial tournament system setup
+- June 14, 2025. Prize pool increased to R1,000,000 with dynamic distribution
+- June 14, 2025. Admin functionality enhanced with working buttons
 
 ## User Preferences
 

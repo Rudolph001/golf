@@ -4,17 +4,76 @@ from models import Tournament, Player, Round, Score, PINACLEPOINT_COURSE
 from datetime import datetime, date
 from sqlalchemy import func
 
-# Prize money distribution for 8 players (R1,000,000 total)
-PRIZE_DISTRIBUTION = {
-    1: 250000,  # 1st place
-    2: 175000,  # 2nd place
-    3: 125000,  # 3rd place
-    4: 100000,  # 4th place
-    5: 90000,   # 5th place
-    6: 80000,   # 6th place
-    7: 90000,   # 7th place
-    8: 90000,   # 8th place (participation)
-}
+def get_prize_distribution(player_count):
+    """Calculate dynamic prize distribution ensuring all players win money"""
+    total_prize = 1000000  # R1,000,000 total
+    
+    if player_count <= 0:
+        return {}
+    
+    # Ensure minimum prize for everyone
+    min_prize = max(20000, total_prize // (player_count * 4))  # Minimum R20,000
+    
+    # Calculate progressive distribution
+    prizes = {}
+    
+    if player_count == 1:
+        prizes[1] = total_prize
+    elif player_count == 2:
+        prizes[1] = int(total_prize * 0.70)  # 70%
+        prizes[2] = int(total_prize * 0.30)  # 30%
+    elif player_count == 3:
+        prizes[1] = int(total_prize * 0.50)  # 50%
+        prizes[2] = int(total_prize * 0.30)  # 30%
+        prizes[3] = int(total_prize * 0.20)  # 20%
+    elif player_count <= 8:
+        # For 4-8 players: Winner gets more, but everyone gets substantial amount
+        remaining = total_prize
+        
+        # 1st place gets 25-30% of total
+        prizes[1] = int(total_prize * 0.28)
+        remaining -= prizes[1]
+        
+        # 2nd place gets 18-22% of total
+        prizes[2] = int(total_prize * 0.20)
+        remaining -= prizes[2]
+        
+        # 3rd place gets 12-15% of total
+        prizes[3] = int(total_prize * 0.14)
+        remaining -= prizes[3]
+        
+        # Distribute remaining among all other players equally
+        # But ensure minimum prize
+        if player_count > 3:
+            remaining_players = player_count - 3
+            share_per_player = remaining // remaining_players
+            share_per_player = max(share_per_player, min_prize)
+            
+            for pos in range(4, player_count + 1):
+                prizes[pos] = share_per_player
+                remaining -= share_per_player
+            
+            # Add any leftover to top positions
+            if remaining > 0:
+                prizes[1] += remaining // 2
+                prizes[2] += remaining - (remaining // 2)
+    else:
+        # For more than 8 players
+        # Top 3 get larger shares, rest split evenly
+        prizes[1] = int(total_prize * 0.25)  # 25%
+        prizes[2] = int(total_prize * 0.18)  # 18%
+        prizes[3] = int(total_prize * 0.12)  # 12%
+        
+        remaining = total_prize - prizes[1] - prizes[2] - prizes[3]  # 45% left
+        remaining_players = player_count - 3
+        
+        share_per_player = remaining // remaining_players
+        share_per_player = max(share_per_player, min_prize)
+        
+        for pos in range(4, player_count + 1):
+            prizes[pos] = share_per_player
+    
+    return prizes
 
 TOURNAMENT_FORMATS = {
     1: {'name': 'Stroke Play', 'format': 'stroke_play', 'description': 'Count every stroke, lowest total wins'},
@@ -63,9 +122,15 @@ def player_setup():
                 db.session.add(player)
                 player_names.append(name.strip())
         
-        if len(player_names) != 8:
-            flash('Please enter exactly 8 player names', 'error')
-            return render_template('player_setup.html')
+        if len(player_names) < 2:
+            flash('Please enter at least 2 player names', 'error')
+            sample_prizes = get_prize_distribution(8)
+            return render_template('player_setup.html', sample_prizes=sample_prizes)
+        
+        if len(player_names) > 20:
+            flash('Maximum 20 players allowed', 'error')
+            sample_prizes = get_prize_distribution(8)
+            return render_template('player_setup.html', sample_prizes=sample_prizes)
         
         # Create rounds for 3 days
         for day in range(1, 4):
@@ -82,7 +147,9 @@ def player_setup():
         flash('Tournament setup completed successfully!', 'success')
         return redirect(url_for('index'))
     
-    return render_template('player_setup.html')
+    # Show dynamic prize distribution for 8 players as example
+    sample_prizes = get_prize_distribution(8)
+    return render_template('player_setup.html', sample_prizes=sample_prizes)
 
 @app.route('/scoreboard')
 def scoreboard():
@@ -94,11 +161,15 @@ def scoreboard():
     leaderboard = calculate_leaderboard(tournament.id)
     rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
     
+    # Get dynamic prize distribution based on actual player count
+    player_count = len(Player.query.filter_by(tournament_id=tournament.id).all())
+    prize_distribution = get_prize_distribution(player_count)
+    
     return render_template('scoreboard.html',
                          tournament=tournament,
                          leaderboard=leaderboard,
                          rounds=rounds,
-                         prize_distribution=PRIZE_DISTRIBUTION,
+                         prize_distribution=prize_distribution,
                          tournament_formats=TOURNAMENT_FORMATS)
 
 @app.route('/admin')
@@ -223,9 +294,12 @@ def calculate_leaderboard(tournament_id):
     # For mixed formats, we'll use a combined scoring system
     leaderboard.sort(key=lambda x: (-x['total_points'], x['total_score'], -x['rounds_completed']))
     
-    # Assign rankings and prize money
+    # Get dynamic prize distribution and assign rankings
+    player_count = len(players)
+    prize_distribution = get_prize_distribution(player_count)
+    
     for i, player_data in enumerate(leaderboard):
         player_data['rank'] = i + 1
-        player_data['prize'] = PRIZE_DISTRIBUTION.get(i + 1, 0)
+        player_data['prize'] = prize_distribution.get(i + 1, 0)
     
     return leaderboard
