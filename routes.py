@@ -532,6 +532,7 @@ def calculate_leaderboard(tournament_id):
         # Get scores for each day and accumulate net scores
         total_net_score = 0
         has_any_scores = False
+        days_with_scores = 0
         
         for day in range(1, 4):
             round_obj = Round.query.filter_by(tournament_id=tournament_id, day=day).first()
@@ -539,6 +540,7 @@ def calculate_leaderboard(tournament_id):
                 score = Score.query.filter_by(player_id=player.id, round_id=round_obj.id).first()
                 if score and score.total_strokes:
                     has_any_scores = True
+                    days_with_scores += 1
                     if round_obj.format == 'stableford':
                         player_data['day_scores'][day-1] = score.stableford_points
                         player_data['total_points'] += score.stableford_points
@@ -556,8 +558,8 @@ def calculate_leaderboard(tournament_id):
         # Set the net score and par score if player has any scores
         if has_any_scores and total_net_score > 0:
             player_data['net_score'] = total_net_score
-            # Calculate par score (72 is standard par for 18 holes, multiply by rounds completed)
-            total_par = 72 * player_data['rounds_completed']
+            # Calculate par score based on actual days with scores (72 par per day)
+            total_par = 72 * days_with_scores
             par_difference = total_net_score - total_par
             if par_difference == 0:
                 player_data['par_score'] = "E"  # Even par
