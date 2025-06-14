@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <!-- Tournament Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success">
+                <div class="card-body text-center">
+                    <h1 class="card-title text-white mb-3">
+                        <i class="fas fa-trophy me-2"></i>
+                        {{ tournament.name }}
+                    </h1>
+                    <p class="card-text text-white-50 mb-0">
+                        3-Day Family Golf Tournament • Total Prize Pool: R{{ "{:,}".format(tournament.total_prize_pool) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Format Information -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">Tournament Format</h2>
+            <div class="row">
+                {% for day, format_info in tournament_formats.items() %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">Day {{ day }}: {{ format_info.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">{{ format_info.description }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Leaderboard -->
+    {% if leaderboard %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">Current Standings</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Player</th>
+                                    <th>Day 1</th>
+                                    <th>Day 2</th>
+                                    <th>Day 3</th>
+                                    <th>Total</th>
+                                    <th>Prize</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player_data in leaderboard %}
+                                <tr>
+                                    <td>
+                                        {% if player_data.rank == 1 %}
+                                            <i class="fas fa-trophy text-warning me-1"></i>
+                                        {% elif player_data.rank == 2 %}
+                                            <i class="fas fa-medal text-secondary me-1"></i>
+                                        {% elif player_data.rank == 3 %}
+                                            <i class="fas fa-medal text-warning me-1"></i>
+                                        {% endif %}
+                                        {{ player_data.rank }}
+                                    </td>
+                                    <td><strong>{{ player_data.player.name }}</strong></td>
+                                    <td>{{ player_data.day_scores[0] or '-' }}</td>
+                                    <td>{{ player_data.day_scores[1] or '-' }}</td>
+                                    <td>{{ player_data.day_scores[2] or '-' }}</td>
+                                    <td>
+                                        {% if player_data.total_score > 0 %}
+                                            {{ player_data.total_score }}
+                                        {% elif player_data.total_points > 0 %}
+                                            {{ player_data.total_points }} pts
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-success"><strong>R{{ "{:,}".format(player_data.prize) }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-3">Quick Actions</h2>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">View Scoreboard</h5>
+                            <p class="card-text">Professional TV-optimized display</p>
+                            <a href="{{ url_for('scoreboard') }}" class="btn btn-primary">Open Scoreboard</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-edit fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Manage Scores</h5>
+                            <p class="card-text">Update player scorecards</p>
+                            <a href="{{ url_for('admin') }}" class="btn btn-success">Admin Panel</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-golf-ball fa-3x text-info mb-3"></i>
+                            <h5 class="card-title">Course Information</h5>
+                            <p class="card-text">Pinaclepoint Golf Estate details</p>
+                            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#courseModal">
+                                View Course
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Course Information Modal -->
+<div class="modal fade" id="courseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pinaclepoint Golf Estate Course Layout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Hole</th>
+                                <th>Par</th>
+                                <th>Yards</th>
+                                <th>Handicap</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hole in range(1, 19) %}
+                            <tr>
+                                <td>{{ hole }}</td>
+                                <td>4</td> <!-- Simplified for demo -->
+                                <td>380</td>
+                                <td>{{ hole }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

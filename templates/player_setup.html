@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Tournament Setup - Pinaclepoint Golf{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Setup Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <h1 class="card-title text-white mb-3">
+                        <i class="fas fa-golf-ball me-2"></i>
+                        Tournament Setup
+                    </h1>
+                    <p class="card-text text-white-50 mb-0">
+                        Welcome to the Pinaclepoint Golf Estate Family Tournament
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Information -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Tournament Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Format:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-calendar-day text-primary me-2"></i><strong>Day 1:</strong> Stroke Play</li>
+                                <li><i class="fas fa-calendar-day text-success me-2"></i><strong>Day 2:</strong> Stableford</li>
+                                <li><i class="fas fa-calendar-day text-info me-2"></i><strong>Day 3:</strong> Scramble</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Prize Pool:</h5>
+                            <p class="lead text-success mb-2">
+                                <i class="fas fa-trophy me-2"></i>R600,000 Total
+                            </p>
+                            <small class="text-muted">Every player wins a prize! Distribution based on final rankings.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Registration Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Player Registration</h3>
+                    <small class="text-muted">Enter the names of all 8 tournament participants</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            {% for i in range(1, 9) %}
+                            <div class="col-md-6 mb-3">
+                                <label for="player_{{ i }}" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Player {{ i }}
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="player_{{ i }}" 
+                                       name="player_{{ i }}"
+                                       placeholder="Enter player name"
+                                       required>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-play me-2"></i>
+                                Start Tournament
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prize Distribution Preview -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Prize Distribution</h4>
+                    <small class="text-muted">Final ranking determines prize allocation</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card border-warning">
+                                <div class="card-body py-2">
+                                    <i class="fas fa-crown text-warning mb-1"></i>
+                                    <h5 class="mb-1">1st Place</h5>
+                                    <strong class="text-success">R150,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card border-secondary">
+                                <div class="card-body py-2">
+                                    <i class="fas fa-medal text-secondary mb-1"></i>
+                                    <h5 class="mb-1">2nd Place</h5>
+                                    <strong class="text-success">R100,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card border-warning">
+                                <div class="card-body py-2">
+                                    <i class="fas fa-medal text-warning mb-1"></i>
+                                    <h5 class="mb-1">3rd Place</h5>
+                                    <strong class="text-success">R80,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card border-primary">
+                                <div class="card-body py-2">
+                                    <i class="fas fa-trophy text-primary mb-1"></i>
+                                    <h5 class="mb-1">4th Place</h5>
+                                    <strong class="text-success">R70,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card">
+                                <div class="card-body py-2">
+                                    <h6 class="mb-1">5th Place</h6>
+                                    <strong class="text-success">R60,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card">
+                                <div class="card-body py-2">
+                                    <h6 class="mb-1">6th Place</h6>
+                                    <strong class="text-success">R50,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card">
+                                <div class="card-body py-2">
+                                    <h6 class="mb-1">7th Place</h6>
+                                    <strong class="text-success">R40,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2 text-center">
+                            <div class="card">
+                                <div class="card-body py-2">
+                                    <h6 class="mb-1">8th Place</h6>
+                                    <strong class="text-success">R50,000</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

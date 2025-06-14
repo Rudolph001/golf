@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Tournament Scoreboard - Pinaclepoint Golf{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Tournament Header for TV Display -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success scoreboard-header">
+                <div class="card-body text-center py-4">
+                    <h1 class="display-4 text-white mb-2">
+                        <i class="fas fa-trophy me-3"></i>
+                        PINACLEPOINT GOLF ESTATE
+                    </h1>
+                    <h2 class="text-white-50 mb-0">Family Golf Tournament</h2>
+                    <p class="text-white-50 lead mb-0">Total Prize Pool: R{{ "{:,}".format(tournament.total_prize_pool) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Format Display -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row text-center">
+                        {% for day, format_info in tournament_formats.items() %}
+                        <div class="col-md-4">
+                            <h4 class="text-primary">Day {{ day }}</h4>
+                            <h5>{{ format_info.name }}</h5>
+                            <p class="text-muted">{{ format_info.description }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Leaderboard -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0 text-center">
+                        <i class="fas fa-chart-line me-2"></i>
+                        TOURNAMENT LEADERBOARD
+                    </h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-lg table-striped scoreboard-table mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-center fs-4 py-3">RANK</th>
+                                    <th class="fs-4 py-3">PLAYER NAME</th>
+                                    <th class="text-center fs-4 py-3">DAY 1<br><small>Stroke Play</small></th>
+                                    <th class="text-center fs-4 py-3">DAY 2<br><small>Stableford</small></th>
+                                    <th class="text-center fs-4 py-3">DAY 3<br><small>Scramble</small></th>
+                                    <th class="text-center fs-4 py-3">TOTAL</th>
+                                    <th class="text-center fs-4 py-3">PRIZE (R)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player_data in leaderboard %}
+                                <tr class="{% if player_data.rank <= 3 %}table-warning{% endif %}">
+                                    <td class="text-center fs-3 py-4">
+                                        {% if player_data.rank == 1 %}
+                                            <i class="fas fa-crown text-warning me-2"></i>
+                                            <span class="badge bg-warning text-dark fs-5">1st</span>
+                                        {% elif player_data.rank == 2 %}
+                                            <i class="fas fa-medal text-secondary me-2"></i>
+                                            <span class="badge bg-secondary fs-5">2nd</span>
+                                        {% elif player_data.rank == 3 %}
+                                            <i class="fas fa-medal text-warning me-2"></i>
+                                            <span class="badge bg-warning text-dark fs-5">3rd</span>
+                                        {% else %}
+                                            <span class="badge bg-primary fs-5">{{ player_data.rank }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fs-3 py-4">
+                                        <strong>{{ player_data.player.name.upper() }}</strong>
+                                    </td>
+                                    <td class="text-center fs-3 py-4">
+                                        {% if player_data.day_scores[0] %}
+                                            <span class="badge bg-info fs-5">{{ player_data.day_scores[0] }}</span>
+                                        {% else %}
+                                            <span class="text-muted fs-4">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center fs-3 py-4">
+                                        {% if player_data.day_scores[1] %}
+                                            <span class="badge bg-success fs-5">{{ player_data.day_scores[1] }} pts</span>
+                                        {% else %}
+                                            <span class="text-muted fs-4">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center fs-3 py-4">
+                                        {% if player_data.day_scores[2] %}
+                                            <span class="badge bg-primary fs-5">{{ player_data.day_scores[2] }}</span>
+                                        {% else %}
+                                            <span class="text-muted fs-4">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center fs-3 py-4">
+                                        {% if player_data.total_score > 0 or player_data.total_points > 0 %}
+                                            <strong class="text-primary">
+                                                {% if player_data.total_score > 0 %}
+                                                    {{ player_data.total_score }}
+                                                {% else %}
+                                                    {{ player_data.total_points }} pts
+                                                {% endif %}
+                                            </strong>
+                                        {% else %}
+                                            <span class="text-muted fs-4">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center fs-3 py-4">
+                                        <strong class="text-success">R{{ "{:,}".format(player_data.prize) }}</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prize Breakdown Footer -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-dark text-light">
+                <div class="card-body text-center py-3">
+                    <h4 class="mb-2">Prize Distribution</h4>
+                    <div class="row">
+                        {% for rank, prize in prize_distribution.items() %}
+                        <div class="col-md-3 col-6 mb-2">
+                            <strong>{{ rank }}{% if rank == 1 %}st{% elif rank == 2 %}nd{% elif rank == 3 %}rd{% else %}th{% endif %} Place:</strong>
+                            <span class="text-success ms-1">R{{ "{:,}".format(prize) }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-refresh for live updates -->
+<script>
+    // Refresh the page every 30 seconds for live updates
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

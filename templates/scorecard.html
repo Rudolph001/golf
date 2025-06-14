@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Scorecard - {{ player.name }} - Day {{ round.day }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Scorecard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="card-title text-white mb-1">
+                                <i class="fas fa-golf-ball me-2"></i>
+                                {{ player.name }} - Day {{ round.day }}
+                            </h1>
+                            <p class="card-text text-white-50 mb-0">
+                                {{ tournament_formats[round.day].name }} • {{ tournament_formats[round.day].description }}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('admin') }}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Admin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scorecard Form -->
+    <form method="POST" action="{{ url_for('update_score') }}">
+        <input type="hidden" name="score_id" value="{{ score.id }}">
+        
+        <!-- Front Nine -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Front Nine</h4>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table scorecard-table mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Hole</th>
+                                        {% for hole in range(1, 10) %}
+                                        <th class="text-center">{{ hole }}</th>
+                                        {% endfor %}
+                                        <th class="text-center bg-warning text-dark">OUT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-info">
+                                        <td><strong>Par</strong></td>
+                                        {% for hole in range(1, 10) %}
+                                        <td class="text-center"><strong>4</strong></td> <!-- Simplified for demo -->
+                                        {% endfor %}
+                                        <td class="text-center bg-warning"><strong>36</strong></td>
+                                    </tr>
+                                    <tr class="table-secondary">
+                                        <td><strong>Handicap</strong></td>
+                                        {% for hole in range(1, 10) %}
+                                        <td class="text-center">{{ hole }}</td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Score</strong></td>
+                                        {% for hole in range(1, 10) %}
+                                        <td class="text-center">
+                                            <input type="number" 
+                                                   name="hole_{{ hole }}" 
+                                                   value="{{ score.get_hole_score(hole) or '' }}"
+                                                   class="form-control text-center score-input"
+                                                   min="1" max="12"
+                                                   placeholder="-">
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">
+                                            <strong id="front-total">-</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Nine -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Back Nine</h4>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table scorecard-table mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Hole</th>
+                                        {% for hole in range(10, 19) %}
+                                        <th class="text-center">{{ hole }}</th>
+                                        {% endfor %}
+                                        <th class="text-center bg-warning text-dark">IN</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-info">
+                                        <td><strong>Par</strong></td>
+                                        {% for hole in range(10, 19) %}
+                                        <td class="text-center"><strong>4</strong></td> <!-- Simplified for demo -->
+                                        {% endfor %}
+                                        <td class="text-center bg-warning"><strong>36</strong></td>
+                                    </tr>
+                                    <tr class="table-secondary">
+                                        <td><strong>Handicap</strong></td>
+                                        {% for hole in range(10, 19) %}
+                                        <td class="text-center">{{ hole }}</td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Score</strong></td>
+                                        {% for hole in range(10, 19) %}
+                                        <td class="text-center">
+                                            <input type="number" 
+                                                   name="hole_{{ hole }}" 
+                                                   value="{{ score.get_hole_score(hole) or '' }}"
+                                                   class="form-control text-center score-input"
+                                                   min="1" max="12"
+                                                   placeholder="-">
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">
+                                            <strong id="back-total">-</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Summary -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">Score Summary</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3 mb-3">
+                                <h3 class="text-primary mb-1" id="total-strokes">{{ score.total_strokes or '-' }}</h3>
+                                <p class="mb-0">Total Strokes</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h3 class="text-success mb-1" id="total-par">72</h3>
+                                <p class="mb-0">Course Par</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h3 class="text-info mb-1" id="score-to-par">
+                                    {% if score.total_strokes %}
+                                        {% if score.total_strokes > 72 %}
+                                            +{{ score.total_strokes - 72 }}
+                                        {% elif score.total_strokes < 72 %}
+                                            {{ score.total_strokes - 72 }}
+                                        {% else %}
+                                            E
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </h3>
+                                <p class="mb-0">To Par</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h3 class="text-warning mb-1" id="stableford-points">{{ score.stableford_points or '-' }}</h3>
+                                <p class="mb-0">Stableford Points</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-save me-2"></i>Save Scorecard
+                </button>
+                <button type="button" class="btn btn-secondary btn-lg" onclick="calculateTotals()">
+                    <i class="fas fa-calculator me-2"></i>Calculate Totals
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Format Information -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ tournament_formats[round.day].name }} Scoring Rules</h5>
+                </div>
+                <div class="card-body">
+                    {% if round.day == 1 %}
+                        <p><strong>Stroke Play:</strong> Count every stroke played. The player with the lowest total score wins.</p>
+                        <ul>
+                            <li>Record the actual number of strokes taken on each hole</li>
+                            <li>Include penalty strokes in your total</li>
+                            <li>Lowest cumulative score after 18 holes wins</li>
+                        </ul>
+                    {% elif round.day == 2 %}
+                        <p><strong>Stableford:</strong> Points are awarded based on your score relative to par:</p>
+                        <ul>
+                            <li>Eagle (2 under par): 4 points</li>
+                            <li>Birdie (1 under par): 3 points</li>
+                            <li>Par: 2 points</li>
+                            <li>Bogey (1 over par): 1 point</li>
+                            <li>Double bogey or worse: 0 points</li>
+                        </ul>
+                        <p>Highest point total wins!</p>
+                    {% else %}
+                        <p><strong>Scramble:</strong> Team format where all players hit from the location of the best shot.</p>
+                        <ul>
+                            <li>All players tee off</li>
+                            <li>Choose the best tee shot</li>
+                            <li>All players play their next shot from that location</li>
+                            <li>Continue until the ball is holed</li>
+                            <li>Team with lowest score wins</li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

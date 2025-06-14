@@ -1,0 +1,217 @@
+/* Custom CSS for Golf Tournament System */
+
+/* Scoreboard specific styles for TV display */
+.scoreboard-header {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.scoreboard-table {
+    font-size: 1.1rem;
+}
+
+.scoreboard-table th,
+.scoreboard-table td {
+    vertical-align: middle;
+    border-width: 2px;
+}
+
+.scoreboard-table .badge {
+    font-size: 0.9em;
+    padding: 0.5em 0.75em;
+}
+
+/* Scorecard input styling */
+.scorecard-table input.score-input {
+    max-width: 60px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.scorecard-table th,
+.scorecard-table td {
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+}
+
+.scorecard-table .form-control:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+/* Golf-themed colors and styling */
+.text-golf-green {
+    color: #2d5016 !important;
+}
+
+.bg-golf-green {
+    background-color: #2d5016 !important;
+}
+
+.card-golf {
+    border: 2px solid #198754;
+    border-radius: 10px;
+}
+
+/* Large screen optimizations for TV display */
+@media (min-width: 1200px) {
+    .scoreboard-table {
+        font-size: 1.3rem;
+    }
+    
+    .scoreboard-table th {
+        font-size: 1.1rem;
+        padding: 1rem 0.5rem;
+    }
+    
+    .scoreboard-table td {
+        padding: 1.25rem 0.5rem;
+    }
+    
+    .display-4 {
+        font-size: 3.5rem;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .scorecard-table {
+        font-size: 0.9rem;
+    }
+    
+    .scorecard-table input.score-input {
+        max-width: 50px;
+        font-size: 1rem;
+    }
+    
+    .scoreboard-table {
+        font-size: 0.9rem;
+    }
+}
+
+/* Animation for rank changes */
+.rank-change {
+    transition: all 0.3s ease-in-out;
+}
+
+.rank-up {
+    animation: moveUp 0.5s ease-in-out;
+}
+
+.rank-down {
+    animation: moveDown 0.5s ease-in-out;
+}
+
+@keyframes moveUp {
+    0% { transform: translateY(20px); opacity: 0.5; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes moveDown {
+    0% { transform: translateY(-20px); opacity: 0.5; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Print styles for scorecards */
+@media print {
+    .navbar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+    
+    .card {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .scorecard-table th,
+    .scorecard-table td {
+        border: 1px solid #000 !important;
+    }
+}
+
+/* Golf ball loading animation */
+.golf-ball-loader {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ccc;
+    position: relative;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Tournament progress indicators */
+.progress-golf {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+}
+
+.progress-golf .progress-bar {
+    background-color: #198754;
+    border-radius: 10px;
+}
+
+/* Custom button styles */
+.btn-golf {
+    background-color: #2d5016;
+    border-color: #2d5016;
+    color: white;
+}
+
+.btn-golf:hover {
+    background-color: #1a2e0d;
+    border-color: #1a2e0d;
+    color: white;
+}
+
+/* Status badges */
+.status-completed {
+    background-color: #198754 !important;
+}
+
+.status-in-progress {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.status-not-started {
+    background-color: #6c757d !important;
+}
+
+/* Prize money highlighting */
+.prize-highlight {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #198754;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Course layout styling */
+.hole-info {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c8 100%);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+.par-indicator {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 50%;
+    font-weight: bold;
+    color: white;
+}
+
+.par-3 { background-color: #17a2b8; }
+.par-4 { background-color: #28a745; }
+.par-5 { background-color: #ffc107; color: #000; }
