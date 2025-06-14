@@ -14,6 +14,7 @@
                             <h1 class="card-title text-white mb-1">
                                 <i class="fas fa-golf-ball me-2"></i>
                                 {{ player.name }} - Day {{ round.day }}
+                                <span class="badge bg-light text-dark ms-2">Handicap: {{ player.handicap }}</span>
                             </h1>
                             <p class="card-text text-white-50 mb-0">
                                 {{ tournament_formats[round.day].name }} • {{ tournament_formats[round.day].description }}
@@ -73,6 +74,23 @@
                                         <td class="text-center">6th hardest</td>
                                         <td class="text-center">4th hardest</td>
                                         <td class="text-center bg-warning">-</td>
+                                    </tr>
+                                    <tr class="table-light">
+                                        <td><strong>Handicap Strokes</strong></td>
+                                        {% set handicap_strokes = score._distribute_handicap_strokes(player.handicap) %}
+                                        {% for hole in range(1, 10) %}
+                                        <td class="text-center">
+                                            {% if handicap_strokes.get(hole, 0) > 0 %}
+                                                <span class="badge bg-primary">{{ handicap_strokes.get(hole, 0) }}</span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">
+                                            {% set front_strokes = handicap_strokes.get(1, 0) + handicap_strokes.get(2, 0) + handicap_strokes.get(3, 0) + handicap_strokes.get(4, 0) + handicap_strokes.get(5, 0) + handicap_strokes.get(6, 0) + handicap_strokes.get(7, 0) + handicap_strokes.get(8, 0) + handicap_strokes.get(9, 0) %}
+                                            {{ front_strokes if front_strokes > 0 else '-' }}
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Score</strong></td>
@@ -138,6 +156,22 @@
                                         <td class="text-center">7th hardest</td>
                                         <td class="text-center bg-warning">-</td>
                                     </tr>
+                                    <tr class="table-light">
+                                        <td><strong>Handicap Strokes</strong></td>
+                                        {% for hole in range(10, 19) %}
+                                        <td class="text-center">
+                                            {% if handicap_strokes.get(hole, 0) > 0 %}
+                                                <span class="badge bg-primary">{{ handicap_strokes.get(hole, 0) }}</span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center bg-warning">
+                                            {% set back_strokes = handicap_strokes.get(10, 0) + handicap_strokes.get(11, 0) + handicap_strokes.get(12, 0) + handicap_strokes.get(13, 0) + handicap_strokes.get(14, 0) + handicap_strokes.get(15, 0) + handicap_strokes.get(16, 0) + handicap_strokes.get(17, 0) + handicap_strokes.get(18, 0) %}
+                                            {{ back_strokes if back_strokes > 0 else '-' }}
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td><strong>Score</strong></td>
                                         {% for hole in range(10, 19) %}
@@ -179,7 +213,7 @@
                                 <h3 class="text-success mb-1" id="total-par">72</h3>
                                 <p class="mb-0">Course Par</p>
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-2 mb-3">
                                 <h3 class="text-info mb-1" id="score-to-par">
                                     {% if score.total_strokes %}
                                         {% if score.total_strokes > 72 %}
@@ -194,6 +228,16 @@
                                     {% endif %}
                                 </h3>
                                 <p class="mb-0">To Par</p>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <h3 class="text-success mb-1" id="net-score">
+                                    {% if score.get_net_score() %}
+                                        {{ score.get_net_score() }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </h3>
+                                <p class="mb-0">Net Score</p>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <h3 class="text-warning mb-1" id="stableford-points">{{ score.stableford_points or '-' }}</h3>

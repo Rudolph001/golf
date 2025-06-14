@@ -96,6 +96,33 @@ function calculateTotals() {
         }
     }
     
+    // Calculate and display net score (total strokes - handicap)
+    const netScoreElement = document.getElementById('net-score');
+    if (netScoreElement && totalStrokes > 0) {
+        // Get player handicap from the badge in the header
+        const handicapBadge = document.querySelector('.badge.bg-light.text-dark');
+        let handicap = 0;
+        if (handicapBadge) {
+            const handicapText = handicapBadge.textContent;
+            const handicapMatch = handicapText.match(/\d+/);
+            if (handicapMatch) {
+                handicap = parseInt(handicapMatch[0]);
+            }
+        }
+        
+        const netScore = totalStrokes - handicap;
+        netScoreElement.textContent = netScore;
+        
+        // Color code net score
+        if (netScore < 72) {
+            netScoreElement.className = 'text-success mb-1';
+        } else if (netScore > 72) {
+            netScoreElement.className = 'text-danger mb-1';
+        } else {
+            netScoreElement.className = 'text-info mb-1';
+        }
+    }
+    
     // Calculate Stableford points (using actual par values)
     const stablefordElement = document.getElementById('stableford-points');
     if (stablefordElement && totalStrokes > 0) {
