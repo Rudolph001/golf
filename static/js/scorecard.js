@@ -6,19 +6,19 @@ function distributeHandicapStrokes(handicap) {
         1: 12, 2: 8, 3: 16, 4: 2, 5: 18, 6: 10, 7: 14, 8: 6, 9: 4,
         10: 11, 11: 13, 12: 5, 13: 15, 14: 9, 15: 17, 16: 1, 17: 3, 18: 7
     };
-    
+
     // Sort holes by difficulty (1 = hardest, 18 = easiest)
     const sortedHoles = Object.entries(holeHandicaps).sort((a, b) => a[1] - b[1]);
-    
+
     const handicapStrokes = {};
     let remainingStrokes = handicap;
-    
+
     // Distribute strokes starting with most difficult holes
     for (const [hole, difficulty] of sortedHoles) {
         if (remainingStrokes > 0) {
             handicapStrokes[parseInt(hole)] = 1;
             remainingStrokes--;
-            
+
             // If handicap > 18, give second stroke to most difficult holes
             if (remainingStrokes > 0 && handicap > 18) {
                 handicapStrokes[parseInt(hole)] = 2;
@@ -26,14 +26,14 @@ function distributeHandicapStrokes(handicap) {
             }
         }
     }
-    
+
     return handicapStrokes;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize scorecard functionality
     initializeScorecard();
-    
+
     // Auto-calculate totals when scores change
     const scoreInputs = document.querySelectorAll('.score-input');
     scoreInputs.forEach(input => {
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeScorecard() {
     // Calculate initial totals if scores exist
     calculateTotals();
-    
+
     // Set up mobile-friendly input handling
     const scoreInputs = document.querySelectorAll('.score-input');
     scoreInputs.forEach(input => {
@@ -53,7 +53,7 @@ function initializeScorecard() {
         input.addEventListener('focus', function() {
             this.select();
         });
-        
+
         // Handle mobile keyboard
         input.addEventListener('keyup', function(e) {
             if (e.key === 'Enter') {
@@ -73,7 +73,7 @@ function calculateTotals() {
     let backCount = 0;
     let frontNetTotal = 0;
     let backNetTotal = 0;
-    
+
     // Get player handicap
     const handicapBadge = document.querySelector('.badge.bg-light.text-dark');
     let handicap = 0;
@@ -84,87 +84,137 @@ function calculateTotals() {
             handicap = parseInt(handicapMatch[0]);
         }
     }
-    
+
     // Handicap distribution based on hole difficulty
     const handicapStrokes = distributeHandicapStrokes(handicap);
-    
+
     // Calculate front nine (holes 1-9)
     for (let i = 1; i <= 9; i++) {
         const input = document.querySelector(`input[name="hole_${i}"]`);
         const netScoreSpan = document.querySelector(`.net-score[data-hole="${i}"]`);
-        
+
         if (input && input.value && !isNaN(input.value)) {
             const grossScore = parseInt(input.value);
             frontNine += grossScore;
             frontCount++;
-            
+
             // Calculate net score (gross - handicap strokes for this hole)
             const holeHandicapStrokes = handicapStrokes[i] || 0;
             const netScore = grossScore - holeHandicapStrokes;
             frontNetTotal += netScore;
-            
+
             if (netScoreSpan) {
-                netScoreSpan.textContent = netScore;
+                const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
+                const par = parValues[i-1];
+
+                // Apply traditional golf scoring symbols
+                if (netScore <= par - 3) {
+                    // Albatross/Double Eagle - triangle
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol triangle">${netScore}</span>`;
+                } else if (netScore === par - 2) {
+                    // Eagle - double circle
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol double-circle">${netScore}</span>`;
+                } else if (netScore === par - 1) {
+                    // Birdie - circle
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol circle">${netScore}</span>`;
+                } else if (netScore === par) {
+                    // Par - no marking, just number
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol par">${netScore}</span>`;
+                } else if (netScore === par + 1) {
+                    // Bogey - square
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol square">${netScore}</span>`;
+                } else if (netScore === par + 2) {
+                    // Double bogey - double square
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol double-square">${netScore}</span>`;
+                } else {
+                    // Triple bogey or worse - triple square
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol triple-square">${netScore}</span>`;
+                }
             }
         } else if (netScoreSpan) {
             netScoreSpan.textContent = '-';
         }
     }
-    
+
     // Calculate back nine (holes 10-18)
     for (let i = 10; i <= 18; i++) {
         const input = document.querySelector(`input[name="hole_${i}"]`);
         const netScoreSpan = document.querySelector(`.net-score[data-hole="${i}"]`);
-        
+
         if (input && input.value && !isNaN(input.value)) {
             const grossScore = parseInt(input.value);
             backNine += grossScore;
             backCount++;
-            
+
             // Calculate net score (gross - handicap strokes for this hole)
             const holeHandicapStrokes = handicapStrokes[i] || 0;
             const netScore = grossScore - holeHandicapStrokes;
             backNetTotal += netScore;
-            
+
             if (netScoreSpan) {
-                netScoreSpan.textContent = netScore;
+                const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
+                const par = parValues[i-1];
+
+                // Apply traditional golf scoring symbols
+                if (netScore <= par - 3) {
+                    // Albatross/Double Eagle - triangle
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol triangle">${netScore}</span>`;
+                } else if (netScore === par - 2) {
+                    // Eagle - double circle
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol double-circle">${netScore}</span>`;
+                } else if (netScore === par - 1) {
+                    // Birdie - circle
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol circle">${netScore}</span>`;
+                } else if (netScore === par) {
+                    // Par - no marking, just number
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol par">${netScore}</span>`;
+                } else if (netScore === par + 1) {
+                    // Bogey - square
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol square">${netScore}</span>`;
+                } else if (netScore === par + 2) {
+                    // Double bogey - double square
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol double-square">${netScore}</span>`;
+                } else {
+                    // Triple bogey or worse - triple square
+                    netScoreSpan.innerHTML = `<span class="scoring-symbol triple-square">${netScore}</span>`;
+                }
             }
         } else if (netScoreSpan) {
             netScoreSpan.textContent = '-';
         }
     }
-    
+
     // Update front nine total
     const frontTotal = document.getElementById('front-total');
     if (frontTotal) {
         frontTotal.textContent = frontCount > 0 ? frontNine : '-';
     }
-    
+
     // Update back nine total
     const backTotal = document.getElementById('back-total');
     if (backTotal) {
         backTotal.textContent = backCount > 0 ? backNine : '-';
     }
-    
+
     // Update front nine net total
     const frontNetTotalElement = document.getElementById('front-net-total');
     if (frontNetTotalElement) {
         frontNetTotalElement.textContent = frontCount > 0 ? frontNetTotal : '-';
     }
-    
+
     // Update back nine net total
     const backNetTotalElement = document.getElementById('back-net-total');
     if (backNetTotalElement) {
         backNetTotalElement.textContent = backCount > 0 ? backNetTotal : '-';
     }
-    
+
     // Update overall totals
     const totalStrokes = frontNine + backNine;
     const totalStrokesElement = document.getElementById('total-strokes');
     if (totalStrokesElement && (frontCount > 0 || backCount > 0)) {
         totalStrokesElement.textContent = totalStrokes;
     }
-    
+
     // Calculate score to par
     const scoreToParElement = document.getElementById('score-to-par');
     if (scoreToParElement && totalStrokes > 0) {
@@ -181,7 +231,7 @@ function calculateTotals() {
             scoreToParElement.className = 'text-info mb-1';
         }
     }
-    
+
     // Calculate and display net score (total strokes - handicap)
     const netScoreElement = document.getElementById('net-score');
     if (netScoreElement && totalStrokes > 0) {
@@ -195,10 +245,10 @@ function calculateTotals() {
                 handicap = parseInt(handicapMatch[0]);
             }
         }
-        
+
         const netScore = totalStrokes - handicap;
         netScoreElement.textContent = netScore;
-        
+
         // Color code net score
         if (netScore < 72) {
             netScoreElement.className = 'text-success mb-1';
@@ -208,15 +258,15 @@ function calculateTotals() {
             netScoreElement.className = 'text-info mb-1';
         }
     }
-    
+
     // Calculate Stableford points (using actual par values)
     const stablefordElement = document.getElementById('stableford-points');
     if (stablefordElement && totalStrokes > 0) {
         let stablefordPoints = 0;
-        
+
         // Par values for each hole based on Pinaclepoint course
         const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
-        
+
         for (let i = 1; i <= 18; i++) {
             const input = document.querySelector(`input[name="hole_${i}"]`);
             if (input && input.value && !isNaN(input.value)) {
@@ -235,7 +285,7 @@ function calculateTotals() {
                 // Double bogey or worse = 0 points (no addition needed)
             }
         }
-        
+
         stablefordElement.textContent = stablefordPoints;
     }
 }
@@ -243,7 +293,7 @@ function calculateTotals() {
 function validateScore(event) {
     const input = event.target;
     const value = parseInt(input.value);
-    
+
     // Validate score is reasonable (1-12 strokes per hole)
     if (value < 1 || value > 12) {
         input.classList.add('is-invalid');
@@ -251,14 +301,14 @@ function validateScore(event) {
     } else {
         input.classList.remove('is-invalid');
         hideTooltip(input);
-        
+
         // Add visual feedback for special scores using actual par values
         const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
         const holeNumber = parseInt(input.name.replace('hole_', ''));
         const par = parValues[holeNumber - 1];
-        
+
         input.classList.remove('birdie', 'eagle', 'bogey', 'double-bogey');
-        
+
         if (value <= par - 2) {
             input.classList.add('eagle');
             input.style.backgroundColor = '#d4edda';
@@ -307,7 +357,7 @@ function autoSave() {
     const form = document.querySelector('form');
     if (form) {
         const formData = new FormData(form);
-        
+
         // Save to localStorage as backup
         const scoreData = {};
         for (let [key, value] of formData.entries()) {
@@ -315,7 +365,7 @@ function autoSave() {
                 scoreData[key] = value;
             }
         }
-        
+
         const scoreId = formData.get('score_id');
         if (scoreId) {
             localStorage.setItem(`scorecard_${scoreId}`, JSON.stringify(scoreData));
@@ -329,7 +379,7 @@ function loadSavedData() {
     if (scoreIdInput) {
         const scoreId = scoreIdInput.value;
         const savedData = localStorage.getItem(`scorecard_${scoreId}`);
-        
+
         if (savedData) {
             try {
                 const data = JSON.parse(savedData);
@@ -350,7 +400,7 @@ function loadSavedData() {
 // Keyboard shortcuts for common scores
 document.addEventListener('keydown', function(e) {
     const activeElement = document.activeElement;
-    
+
     if (activeElement && activeElement.classList.contains('score-input')) {
         // Quick entry shortcuts
         switch(e.key) {
@@ -385,16 +435,16 @@ function printScorecard() {
 function exportScorecard() {
     const scoreData = {};
     const inputs = document.querySelectorAll('.score-input');
-    
+
     inputs.forEach(input => {
         if (input.value) {
             scoreData[input.name] = input.value;
         }
     });
-    
+
     const dataStr = JSON.stringify(scoreData, null, 2);
     const dataBlob = new Blob([dataStr], {type: 'application/json'});
-    
+
     const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
     link.download = 'scorecard.json';
@@ -419,7 +469,7 @@ if ('ontouchstart' in window) {
             font-size: 16px; /* Prevent iOS zoom */
             padding: 12px;
         }
-        
+
         .btn {
             min-height: 44px; /* Touch target size */
         }

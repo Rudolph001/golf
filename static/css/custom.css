@@ -143,6 +143,77 @@
     box-shadow: 0 8px 24px rgba(26, 35, 50, 0.2);
 }
 
+/* Traditional Golf Scoring Symbols */
+.scoring-symbol {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 22px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Circle for Birdie */
+.scoring-symbol.circle {
+    border: 2px solid #28a745;
+    border-radius: 50%;
+    color: #28a745;
+}
+
+/* Double Circle for Eagle */
+.scoring-symbol.double-circle {
+    border: 3px double #20c997;
+    border-radius: 50%;
+    color: #20c997;
+}
+
+/* Triangle for Albatross */
+.scoring-symbol.triangle {
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 20px solid #17a2b8;
+    position: relative;
+    line-height: 0;
+}
+
+.scoring-symbol.triangle::after {
+    content: attr(data-score);
+    position: absolute;
+    top: 8px;
+    left: -6px;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Par - just the number */
+.scoring-symbol.par {
+    color: #6c757d;
+    font-weight: normal;
+}
+
+/* Square for Bogey */
+.scoring-symbol.square {
+    border: 2px solid #ffc107;
+    color: #ffc107;
+}
+
+/* Double Square for Double Bogey */
+.scoring-symbol.double-square {
+    border: 3px double #fd7e14;
+    color: #fd7e14;
+}
+
+/* Triple Square for Triple Bogey or worse */
+.scoring-symbol.triple-square {
+    border: 2px solid #dc3545;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #dc3545;
+    color: #dc3545;
+}
+
 /* Large screen optimizations for TV display */
 @media (min-width: 1200px) {
     .scoreboard-table {
@@ -160,6 +231,13 @@
     
     .display-4 {
         font-size: 2.5rem;
+    }
+    
+    .scoring-symbol {
+        width: 28px;
+        height: 28px;
+        line-height: 26px;
+        font-size: 14px;
     }
 }
 
