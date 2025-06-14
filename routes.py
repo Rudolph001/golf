@@ -567,13 +567,52 @@ def calculate_leaderboard(tournament_id):
     
     leaderboard.sort(key=sort_key)
     
-    # Get dynamic prize distribution and assign rankings
+    # Get dynamic prize distribution and assign rankings with tie handling
     player_count = len(players)
     prize_distribution = get_prize_distribution(player_count)
     
-    for i, player_data in enumerate(leaderboard):
-        player_data['rank'] = i + 1
-        player_data['prize'] = prize_distribution['main_prizes'].get(i + 1, 0)
-        player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
+    # Handle ties and calculate split prize money
+    current_rank = 1
+    i = 0
+    
+    while i < len(leaderboard):
+        # Find all players with the same score (tied players)
+        tied_players = [leaderboard[i]]
+        current_score = leaderboard[i]['net_score']
+        current_points = leaderboard[i]['total_points']
+        
+        # Look for tied players
+        j = i + 1
+        while j < len(leaderboard) and leaderboard[j]['net_score'] == current_score and leaderboard[j]['total_points'] == current_points:
+            tied_players.append(leaderboard[j])
+            j += 1
+        
+        # Calculate prize money for tied positions
+        if len(tied_players) > 1:
+            # Calculate total prize money for tied positions
+            total_tied_prize = 0
+            for pos in range(current_rank, current_rank + len(tied_players)):
+                total_tied_prize += prize_distribution['main_prizes'].get(pos, 0)
+            
+            # Split the prize equally among tied players
+            split_prize = total_tied_prize // len(tied_players)
+            
+            # Assign same rank and split prize to all tied players
+            for player_data in tied_players:
+                player_data['rank'] = current_rank
+                player_data['prize'] = split_prize
+                player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
+                player_data['is_tied'] = True
+        else:
+            # Single player at this position
+            player_data = tied_players[0]
+            player_data['rank'] = current_rank
+            player_data['prize'] = prize_distribution['main_prizes'].get(current_rank, 0)
+            player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
+            player_data['is_tied'] = False
+        
+        # Move to next unprocessed position
+        current_rank += len(tied_players)
+        i = j
     
     return leaderboard
