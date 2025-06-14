@@ -596,11 +596,17 @@ def calculate_leaderboard(tournament_id):
         if len(tied_players) > 1 and current_score is not None:
             # Calculate total prize money for tied positions
             total_tied_prize = 0
+            positions_involved = []
             for pos in range(current_rank, current_rank + len(tied_players)):
-                total_tied_prize += prize_distribution['main_prizes'].get(pos, 0)
+                if pos in prize_distribution['main_prizes']:
+                    total_tied_prize += prize_distribution['main_prizes'][pos]
+                    positions_involved.append(pos)
             
-            # Split the prize equally among tied players
-            split_prize = total_tied_prize // len(tied_players)
+            # Split the prize equally among tied players (rounded down to avoid overpaying)
+            if total_tied_prize > 0:
+                split_prize = total_tied_prize // len(tied_players)
+            else:
+                split_prize = 0
             
             # Assign same rank and split prize to all tied players
             for player_data in tied_players:
@@ -608,6 +614,7 @@ def calculate_leaderboard(tournament_id):
                 player_data['prize'] = split_prize
                 player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
                 player_data['is_tied'] = True
+                player_data['tied_positions'] = positions_involved  # For debugging
         else:
             # Single player at this position or player with no score
             player_data = tied_players[0]
