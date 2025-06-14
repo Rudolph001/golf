@@ -512,13 +512,45 @@ def clear_special_prizes():
     db.session.commit()
     return redirect(url_for('special_prizes'))
 
+@app.route('/toggle_prize_eligibility', methods=['POST'])
+def toggle_prize_eligibility():
+    """Toggle a player's prize money eligibility"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash('No tournament found.', 'error')
+        return redirect(url_for('admin'))
+    
+    player_id = request.form.get('player_id')
+    action = request.form.get('action')
+    
+    if not player_id:
+        flash('Please select a player.', 'error')
+        return redirect(url_for('admin'))
+    
+    try:
+        player = Player.query.get_or_404(player_id)
+        
+        if action == 'exclude':
+            player.prize_eligible = False
+            flash(f'{player.name} is now excluded from prize money but will still appear in rankings.', 'warning')
+        elif action == 'include':
+            player.prize_eligible = True
+            flash(f'{player.name} is now eligible for prize money.', 'success')
+        
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash('Error updating player eligibility. Please try again.', 'error')
+    
+    return redirect(url_for('admin'))
+
 def calculate_leaderboard(tournament_id):
     """Calculate tournament leaderboard with cumulative scores and net scoring"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
     leaderboard = []
     
-    # Players who don't qualify for prize money but still show in rankings
-    non_prize_eligible_players = ['Rudolph', 'Christiaan']
+    # Get players who don't qualify for prize money but still show in rankings
+    non_prize_eligible_players = [p.name for p in players if not p.prize_eligible]
     
     for player in players:
         player_data = {
@@ -599,7 +631,7 @@ def calculate_leaderboard(tournament_id):
     
     # Get dynamic prize distribution and assign rankings with tie handling
     # Count only prize-eligible players for prize distribution
-    prize_eligible_players = [p for p in leaderboard if p['player'].name not in non_prize_eligible_players]
+    prize_eligible_players = [p for p in leaderboard if p['player'].prize_eligible]
     player_count = len(prize_eligible_players)
     prize_distribution = get_prize_distribution(player_count)
     
@@ -626,8 +658,8 @@ def calculate_leaderboard(tournament_id):
             j = i + 1
         
         # Separate prize-eligible and non-eligible players in this tie group
-        prize_eligible_tied = [p for p in tied_players if p['player'].name not in non_prize_eligible_players]
-        non_eligible_tied = [p for p in tied_players if p['player'].name in non_prize_eligible_players]
+        prize_eligible_tied = [p for p in tied_players if p['player'].prize_eligible]
+        non_eligible_tied = [p for p in tied_players if not p['player'].prize_eligible]
         
         # Calculate prize money for tied positions (only for eligible players)
         if len(prize_eligible_tied) > 1 and current_score is not None:

@@ -132,6 +132,84 @@
         </div>
     </div>
 
+    <!-- Prize Money Eligibility Management -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        Prize Money Eligibility
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Manage which players are eligible for prize money. Non-eligible players will still appear in rankings but won't receive tournament placing prizes.</p>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Current Player Status</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Player</th>
+                                            <th>Prize Eligible</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for player in players %}
+                                        <tr>
+                                            <td><strong>{{ player.name }}</strong></td>
+                                            <td>
+                                                {% if player.prize_eligible %}
+                                                    <span class="badge bg-success">Eligible</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Not Eligible</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('toggle_prize_eligibility') }}" style="display: inline;">
+                                                    <input type="hidden" name="player_id" value="{{ player.id }}">
+                                                    {% if player.prize_eligible %}
+                                                        <input type="hidden" name="action" value="exclude">
+                                                        <button type="submit" class="btn btn-warning btn-sm"
+                                                                onclick="return confirm('Are you sure you want to exclude {{ player.name }} from prize money? They will still appear in rankings.')">
+                                                            <i class="fas fa-ban me-1"></i>Exclude from Prizes
+                                                        </button>
+                                                    {% else %}
+                                                        <input type="hidden" name="action" value="include">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check me-1"></i>Include in Prizes
+                                                        </button>
+                                                    {% endif %}
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <strong>Current Prize Distribution:</strong>
+                                {% set eligible_count = players|selectattr('prize_eligible')|list|length %}
+                                Prize money will be distributed among {{ eligible_count }} eligible player(s).
+                                {% if eligible_count < players|length %}
+                                    {{ players|length - eligible_count }} player(s) excluded from prize money but will appear in rankings.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Tournament Management Actions -->
     <div class="row mb-4">
         <div class="col-12">

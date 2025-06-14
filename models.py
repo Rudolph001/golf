@@ -18,6 +18,7 @@ class Player(db.Model):
     name = db.Column(db.String(100), nullable=False)
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournament.id'), nullable=False)
     handicap = db.Column(db.Integer, default=0)
+    prize_eligible = db.Column(db.Boolean, default=True)  # New field for prize eligibility
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships

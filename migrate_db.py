@@ -39,3 +39,35 @@ def migrate_database():
 
 if __name__ == "__main__":
     migrate_database()
+from app import app, db
+from models import Player
+
+def migrate_database():
+    """Add prize_eligible field to existing players"""
+    with app.app_context():
+        # Check if column exists
+        try:
+            # Try to access the column
+            players = Player.query.all()
+            for player in players:
+                _ = player.prize_eligible
+            print("Column 'prize_eligible' already exists.")
+        except Exception:
+            # Column doesn't exist, add it
+            print("Adding 'prize_eligible' column...")
+            with db.engine.connect() as conn:
+                conn.execute("ALTER TABLE player ADD COLUMN prize_eligible BOOLEAN DEFAULT 1")
+                conn.commit()
+            print("Column added successfully.")
+        
+        # Set default values for existing players
+        players = Player.query.all()
+        for player in players:
+            if not hasattr(player, 'prize_eligible') or player.prize_eligible is None:
+                player.prize_eligible = True
+        
+        db.session.commit()
+        print("Migration completed successfully.")
+
+if __name__ == '__main__':
+    migrate_database()
