@@ -372,7 +372,8 @@ def calculate_leaderboard(tournament_id):
             'day_scores': [None, None, None],
             'total_score': 0,
             'total_points': 0,
-            'rounds_completed': 0
+            'rounds_completed': 0,
+            'special_prizes_won': 0
         }
         
         # Get scores for each day
@@ -389,6 +390,13 @@ def calculate_leaderboard(tournament_id):
                         player_data['total_score'] += score.total_strokes
                     player_data['rounds_completed'] += 1
         
+        # Calculate special prizes won by this player
+        special_prizes = SpecialPrize.query.filter_by(
+            tournament_id=tournament_id, 
+            player_id=player.id
+        ).all()
+        player_data['special_prizes_won'] = len(special_prizes) * 50000  # R50,000 per special prize
+        
         leaderboard.append(player_data)
     
     # Sort leaderboard (stroke play: lower is better, stableford: higher is better)
@@ -402,5 +410,6 @@ def calculate_leaderboard(tournament_id):
     for i, player_data in enumerate(leaderboard):
         player_data['rank'] = i + 1
         player_data['prize'] = prize_distribution['main_prizes'].get(i + 1, 0)
+        player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
     
     return leaderboard

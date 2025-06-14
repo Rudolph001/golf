@@ -73,7 +73,9 @@
                                     <th class="text-center py-2">DAY 3<br><small>Scramble</small></th>
                                     <th class="text-center py-2">GROSS</th>
                                     <th class="text-center py-2">NET</th>
-                                    <th class="text-center py-2">PRIZE</th>
+                                    <th class="text-center py-2">TOURNAMENT<br><small>Prize</small></th>
+                                    <th class="text-center py-2">SPECIAL<br><small>Prizes</small></th>
+                                    <th class="text-center py-2">TOTAL<br><small>Winnings</small></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -136,6 +138,16 @@
                                     </td>
                                     <td class="text-center py-2">
                                         <strong class="text-success">R{{ "{:,}".format(player_data.prize) }}</strong>
+                                    </td>
+                                    <td class="text-center py-2">
+                                        {% if player_data.special_prizes_won > 0 %}
+                                            <strong class="text-warning">R{{ "{:,}".format(player_data.special_prizes_won) }}</strong>
+                                        {% else %}
+                                            <span class="text-muted">R0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center py-2">
+                                        <strong class="text-primary">R{{ "{:,}".format(player_data.total_winnings) }}</strong>
                                     </td>
                                 </tr>
                                 {% endfor %}
