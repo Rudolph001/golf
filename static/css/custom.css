@@ -16,11 +16,20 @@
 
 /* Professional tournament header styling */
 .tournament-header {
-    background: linear-gradient(135deg, var(--tournament-dark-navy) 0%, var(--tournament-navy) 70%, var(--tournament-accent-blue) 100%);
+    background: linear-gradient(135deg, var(--tournament-dark-navy) 0%, var(--tournament-navy) 70%, var(--tournament-accent-blue) 100%) !important;
     border-bottom: 4px solid var(--tournament-gold);
     box-shadow: 0 8px 20px var(--tournament-shadow);
     position: relative;
     overflow: hidden;
+}
+
+/* Ensure scorecard header overrides any Bootstrap green styling */
+.scorecard-header,
+.scorecard-header.card {
+    background: linear-gradient(135deg, var(--tournament-dark-navy) 0%, var(--tournament-navy) 70%, var(--tournament-accent-blue) 100%) !important;
+    border-bottom: 4px solid var(--tournament-gold) !important;
+    box-shadow: 0 8px 20px var(--tournament-shadow) !important;
+    border: none !important;
 }
 
 .tournament-header::before {
