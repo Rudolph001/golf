@@ -499,7 +499,7 @@ def clear_special_prizes():
     return redirect(url_for('special_prizes'))
 
 def calculate_leaderboard(tournament_id):
-    """Calculate tournament leaderboard with cumulative scores"""
+    """Calculate tournament leaderboard with cumulative scores and net scoring"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
     leaderboard = []
     
@@ -510,22 +510,39 @@ def calculate_leaderboard(tournament_id):
             'total_score': 0,
             'total_points': 0,
             'rounds_completed': 0,
-            'special_prizes_won': 0
+            'special_prizes_won': 0,
+            'net_score': None
         }
         
-        # Get scores for each day
+        # Get scores for each day and accumulate net scores
+        total_net_score = 0
+        has_any_scores = False
+        
         for day in range(1, 4):
             round_obj = Round.query.filter_by(tournament_id=tournament_id, day=day).first()
             if round_obj:
                 score = Score.query.filter_by(player_id=player.id, round_id=round_obj.id).first()
                 if score and score.total_strokes:
+                    has_any_scores = True
                     if round_obj.format == 'stableford':
                         player_data['day_scores'][day-1] = score.stableford_points
                         player_data['total_points'] += score.stableford_points
                     else:
                         player_data['day_scores'][day-1] = score.total_strokes
                         player_data['total_score'] += score.total_strokes
+                    
+                    # Add net score for this round
+                    net_score = score.get_net_score()
+                    if net_score is not None:
+                        total_net_score += net_score
+                    
                     player_data['rounds_completed'] += 1
+        
+        # Set the net score if player has any scores
+        if has_any_scores and total_net_score > 0:
+            player_data['net_score'] = total_net_score
+        else:
+            player_data['net_score'] = None
         
         # Calculate special prizes won by this player
         try:
@@ -540,9 +557,15 @@ def calculate_leaderboard(tournament_id):
         
         leaderboard.append(player_data)
     
-    # Sort leaderboard (stroke play: lower is better, stableford: higher is better)
-    # For mixed formats, we'll use a combined scoring system
-    leaderboard.sort(key=lambda x: (-x['total_points'], x['total_score'], -x['rounds_completed']))
+    # Sort leaderboard by net score (lower is better), then by stableford points (higher is better)
+    # Players with no scores go to the bottom
+    def sort_key(x):
+        if x['net_score'] is not None:
+            return (0, x['net_score'], -x['total_points'])  # 0 = has score, sort by net score ascending, then points descending
+        else:
+            return (1, 999, -x['total_points'])  # 1 = no score, goes to bottom
+    
+    leaderboard.sort(key=sort_key)
     
     # Get dynamic prize distribution and assign rankings
     player_count = len(players)
