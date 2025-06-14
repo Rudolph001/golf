@@ -5,15 +5,27 @@
     <!-- Tournament Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-success">
-                <div class="card-body text-center">
-                    <h1 class="card-title text-white mb-3">
-                        <i class="fas fa-trophy me-2"></i>
-                        {{ tournament.name }}
+            <div class="card tournament-header">
+                <div class="card-body text-center py-5 position-relative">
+                    <h1 class="card-title text-white mb-3 tournament-logo display-3">
+                        <i class="fas fa-trophy me-3 trophy-icon"></i>
+                        The Pinecrest Family Championship
                     </h1>
-                    <p class="card-text text-white-50 mb-0">
-                        3-Day Family Golf Tournament • Total Prize Pool: R{{ "{:,}".format(tournament.total_prize_pool) }}
-                    </p>
+                    <h2 class="tournament-tagline mb-3">
+                        Annual Family Golf Championship
+                    </h2>
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <p class="card-text text-white mb-2 fs-5">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Three-Day Championship Tournament
+                            </p>
+                            <p class="card-text text-white-50 mb-0 fs-6">
+                                <i class="fas fa-award me-2"></i>
+                                Total Prize Pool: R{{ "{:,}".format(tournament.total_prize_pool) }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -44,8 +56,17 @@
     {% if leaderboard %}
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="mb-3">Current Standings</h2>
-            <div class="card">
+            <h2 class="mb-3 text-center">
+                <i class="fas fa-list-ol me-2 text-golf-green"></i>
+                Championship Leaderboard
+            </h2>
+            <div class="card leaderboard-card">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-crown me-2"></i>
+                        Current Championship Standings
+                    </h4>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped">
@@ -62,18 +83,25 @@
                             </thead>
                             <tbody>
                                 {% for player_data in leaderboard %}
-                                <tr>
-                                    <td>
+                                <tr class="{% if player_data.rank <= 3 %}table-warning{% endif %}">
+                                    <td class="text-center">
                                         {% if player_data.rank == 1 %}
-                                            <i class="fas fa-trophy text-warning me-1"></i>
+                                            <span class="championship-badge">
+                                                <i class="fas fa-crown me-1"></i>1st
+                                            </span>
                                         {% elif player_data.rank == 2 %}
-                                            <i class="fas fa-medal text-secondary me-1"></i>
+                                            <span class="badge bg-secondary fs-6">
+                                                <i class="fas fa-medal me-1"></i>2nd
+                                            </span>
                                         {% elif player_data.rank == 3 %}
-                                            <i class="fas fa-medal text-warning me-1"></i>
+                                            <span class="badge bg-warning text-dark fs-6">
+                                                <i class="fas fa-medal me-1"></i>3rd
+                                            </span>
+                                        {% else %}
+                                            <span class="fs-5 fw-bold">{{ player_data.rank }}</span>
                                         {% endif %}
-                                        {{ player_data.rank }}
                                     </td>
-                                    <td><strong>{{ player_data.player.name }}</strong></td>
+                                    <td><strong class="fs-5">{{ player_data.player.name }}</strong></td>
                                     <td>{{ player_data.day_scores[0] or '-' }}</td>
                                     <td>{{ player_data.day_scores[1] or '-' }}</td>
                                     <td>{{ player_data.day_scores[2] or '-' }}</td>
@@ -109,17 +137,17 @@
                             <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
                             <h5 class="card-title">View Scoreboard</h5>
                             <p class="card-text">Professional TV-optimized display</p>
-                            <a href="{{ url_for('scoreboard') }}" class="btn btn-primary">Open Scoreboard</a>
+                            <a href="{{ url_for('scoreboard') }}" class="btn btn-tournament">Championship Board</a>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <div class="card h-100">
+                    <div class="card card-tournament h-100">
                         <div class="card-body text-center">
-                            <i class="fas fa-edit fa-3x text-success mb-3"></i>
-                            <h5 class="card-title">Manage Scores</h5>
-                            <p class="card-text">Update player scorecards</p>
-                            <a href="{{ url_for('admin') }}" class="btn btn-success">Admin Panel</a>
+                            <i class="fas fa-edit fa-3x text-golf-green mb-3"></i>
+                            <h5 class="card-title">Tournament Control</h5>
+                            <p class="card-text">Championship score management</p>
+                            <a href="{{ url_for('admin') }}" class="btn btn-tournament">Admin Center</a>
                         </div>
                     </div>
                 </div>

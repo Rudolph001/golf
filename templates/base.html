@@ -16,11 +16,11 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-tournament mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-golf-ball me-2"></i>
-                Pinaclepoint Golf Tournament
+            <a class="navbar-brand tournament-logo" href="{{ url_for('index') }}">
+                <i class="fas fa-trophy me-2 trophy-icon"></i>
+                The Pinecrest Family Championship
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -67,13 +67,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light mt-5 py-4">
+    <footer class="tournament-header text-light mt-5 py-4">
         <div class="container text-center">
-            <p class="mb-0">
-                <i class="fas fa-golf-ball me-2"></i>
-                Pinaclepoint Golf Estate Family Tournament
+            <p class="mb-1 tournament-logo">
+                <i class="fas fa-trophy me-2 trophy-icon"></i>
+                The Pinecrest Family Championship
             </p>
-            <small class="text-muted">Professional Golf Tournament Management System</small>
+            <p class="tournament-tagline mb-0">A Tradition of Excellence • Est. 2025</p>
+            <small class="text-white-50">Championship Golf Tournament Management System</small>
         </div>
     </footer>
 
