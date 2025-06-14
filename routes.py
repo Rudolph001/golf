@@ -1,79 +1,100 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db
-from models import Tournament, Player, Round, Score, PINACLEPOINT_COURSE
+from models import Tournament, Player, Round, Score, SpecialPrize, PINACLEPOINT_COURSE
 from datetime import datetime, date
 from sqlalchemy import func
 
 def get_prize_distribution(player_count):
-    """Calculate dynamic prize distribution ensuring all players win money"""
-    total_prize = 1000000  # R1,000,000 total
+    """Calculate dynamic prize distribution ensuring no one gets the same amount"""
+    total_main_prize = 955000  # R955,000 for main prizes (leaving R45,000 for special prizes)
+    special_prizes_total = 45000  # R15,000 each for 3 special prizes
     
     if player_count <= 0:
-        return {}
+        return {'main_prizes': {}, 'special_prizes': {'longest_drive': 15000, 'closest_hole': 15000, 'most_birdies': 15000}}
     
-    # Ensure minimum prize for everyone
-    min_prize = max(20000, total_prize // (player_count * 4))  # Minimum R20,000
-    
-    # Calculate progressive distribution
     prizes = {}
     
     if player_count == 1:
-        prizes[1] = total_prize
+        prizes[1] = total_main_prize
     elif player_count == 2:
-        prizes[1] = int(total_prize * 0.70)  # 70%
-        prizes[2] = int(total_prize * 0.30)  # 30%
+        prizes[1] = 573000  # 60%
+        prizes[2] = 382000  # 40%
     elif player_count == 3:
-        prizes[1] = int(total_prize * 0.50)  # 50%
-        prizes[2] = int(total_prize * 0.30)  # 30%
-        prizes[3] = int(total_prize * 0.20)  # 20%
-    elif player_count <= 8:
-        # For 4-8 players: Winner gets more, but everyone gets substantial amount
-        remaining = total_prize
-        
-        # 1st place gets 25-30% of total
-        prizes[1] = int(total_prize * 0.28)
-        remaining -= prizes[1]
-        
-        # 2nd place gets 18-22% of total
-        prizes[2] = int(total_prize * 0.20)
-        remaining -= prizes[2]
-        
-        # 3rd place gets 12-15% of total
-        prizes[3] = int(total_prize * 0.14)
-        remaining -= prizes[3]
-        
-        # Distribute remaining among all other players equally
-        # But ensure minimum prize
-        if player_count > 3:
-            remaining_players = player_count - 3
-            share_per_player = remaining // remaining_players
-            share_per_player = max(share_per_player, min_prize)
-            
-            for pos in range(4, player_count + 1):
-                prizes[pos] = share_per_player
-                remaining -= share_per_player
-            
-            # Add any leftover to top positions
-            if remaining > 0:
-                prizes[1] += remaining // 2
-                prizes[2] += remaining - (remaining // 2)
+        prizes[1] = 477500  # 50%
+        prizes[2] = 286500  # 30%
+        prizes[3] = 191000  # 20%
+    elif player_count == 4:
+        prizes[1] = 334250  # 35%
+        prizes[2] = 238750  # 25%
+        prizes[3] = 191000  # 20%
+        prizes[4] = 191000  # 20%
+    elif player_count == 5:
+        prizes[1] = 286500  # 30%
+        prizes[2] = 210375  # 22%
+        prizes[3] = 172275  # 18%
+        prizes[4] = 143775  # 15%
+        prizes[5] = 142075  # 15%
+    elif player_count == 6:
+        prizes[1] = 267575  # 28%
+        prizes[2] = 191000  # 20%
+        prizes[3] = 143775  # 15%
+        prizes[4] = 124925  # 13%
+        prizes[5] = 114375  # 12%
+        prizes[6] = 113350  # 12%
+    elif player_count == 7:
+        prizes[1] = 238750  # 25%
+        prizes[2] = 171825  # 18%
+        prizes[3] = 124925  # 13%
+        prizes[4] = 105575  # 11%
+        prizes[5] = 95500   # 10%
+        prizes[6] = 91075   # 9.5%
+        prizes[7] = 127350  # Rest
+    elif player_count == 8:
+        prizes[1] = 238750  # 25%
+        prizes[2] = 171825  # 18%
+        prizes[3] = 124925  # 13%
+        prizes[4] = 95500   # 10%
+        prizes[5] = 76400   # 8%
+        prizes[6] = 66925   # 7%
+        prizes[7] = 57450   # 6%
+        prizes[8] = 123225  # Rest
     else:
-        # For more than 8 players
-        # Top 3 get larger shares, rest split evenly
-        prizes[1] = int(total_prize * 0.25)  # 25%
-        prizes[2] = int(total_prize * 0.18)  # 18%
-        prizes[3] = int(total_prize * 0.12)  # 12%
+        # For more than 8 players, create descending amounts
+        base_amounts = [238750, 171825, 124925, 95500, 76400, 66925, 57450]
+        total_used = sum(base_amounts)
+        remaining = total_main_prize - total_used
+        remaining_players = player_count - 7
         
-        remaining = total_prize - prizes[1] - prizes[2] - prizes[3]  # 45% left
-        remaining_players = player_count - 3
+        # Create descending amounts for remaining players
+        for i, amount in enumerate(base_amounts, 1):
+            prizes[i] = amount
         
-        share_per_player = remaining // remaining_players
-        share_per_player = max(share_per_player, min_prize)
+        # Distribute remaining amount in descending order
+        step = remaining // (remaining_players * 2)  # Create variation
+        for i in range(8, player_count + 1):
+            amount = max(20000, remaining - (i - 8) * step)
+            prizes[i] = amount
+            remaining -= amount
         
-        for pos in range(4, player_count + 1):
-            prizes[pos] = share_per_player
+        # Adjust if needed
+        if remaining > 0:
+            prizes[1] += remaining
     
-    return prizes
+    # Ensure all amounts are different by adding small variations
+    amounts_used = set()
+    for pos in sorted(prizes.keys()):
+        while prizes[pos] in amounts_used:
+            prizes[pos] += 25  # Add R25 if duplicate
+        amounts_used.add(prizes[pos])
+    
+    return {
+        'main_prizes': prizes,
+        'special_prizes': {
+            'longest_drive': 15000,
+            'closest_hole': 15000, 
+            'most_birdies': 15000
+        }
+    }
 
 TOURNAMENT_FORMATS = {
     1: {'name': 'Stroke Play', 'format': 'stroke_play', 'description': 'Count every stroke, lowest total wins'},

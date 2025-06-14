@@ -141,6 +141,18 @@ class Score(db.Model):
             return self.total_strokes - self.player.handicap
         return None
 
+class SpecialPrize(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournament.id'), nullable=False)
+    prize_type = db.Column(db.String(50), nullable=False)  # 'longest_drive', 'closest_hole', 'most_birdies'
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=True)
+    amount = db.Column(db.Integer, default=15000)  # R15,000 for each special prize
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    player = db.relationship('Player', backref='special_prizes')
+    tournament = db.relationship('Tournament', backref='special_prizes')
+
 # Pinaclepoint Golf Estate course data
 PINACLEPOINT_COURSE = {
     'holes': [
