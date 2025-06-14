@@ -92,22 +92,16 @@
                         <div class="col-md-6 mb-3">
                             <h6>Clear All Scores</h6>
                             <p class="text-muted small">Remove all player scores but keep players and tournament setup</p>
-                            <form method="POST" action="{{ url_for('clear_all_scores') }}" 
-                                  onsubmit="return confirm('Are you sure you want to clear all scores? This cannot be undone!')">
-                                <button type="submit" class="btn btn-warning">
-                                    <i class="fas fa-eraser me-2"></i>Clear All Scores
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-warning" onclick="clearAllScores()">
+                                <i class="fas fa-eraser me-2"></i>Clear All Scores
+                            </button>
                         </div>
                         <div class="col-md-6 mb-3">
                             <h6>Reset Tournament</h6>
                             <p class="text-muted small">Complete reset - removes all players, scores, and tournament data</p>
-                            <form method="POST" action="{{ url_for('reset_tournament') }}" 
-                                  onsubmit="return confirm('Are you sure you want to completely reset the tournament? This will delete ALL data and cannot be undone!')">
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-trash-alt me-2"></i>Reset Tournament
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-danger" onclick="resetTournament()">
+                                <i class="fas fa-trash-alt me-2"></i>Reset Tournament
+                            </button>
                         </div>
                     </div>
                 </div>
