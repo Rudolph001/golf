@@ -281,6 +281,80 @@ def reset_tournament():
         flash('Error resetting tournament. Please try again.', 'error')
         return redirect(url_for('admin'))
 
+@app.route('/day/<int:day>')
+def day_scorecard(day):
+    """Show scorecard entry for a specific day"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    round_obj = Round.query.filter_by(tournament_id=tournament.id, day=day).first()
+    if not round_obj:
+        flash(f'Day {day} round not found. Please setup the tournament first.', 'error')
+        return redirect(url_for('admin'))
+    
+    players = Player.query.filter_by(tournament_id=tournament.id).all()
+    
+    return render_template('admin.html',
+                         tournament=tournament,
+                         players=players,
+                         rounds=[round_obj],
+                         tournament_formats=TOURNAMENT_FORMATS,
+                         selected_day=day)
+
+@app.route('/special_prizes')
+def special_prizes():
+    """Manage special prizes (longest drive, closest to hole, most birdies)"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    players = Player.query.filter_by(tournament_id=tournament.id).all()
+    
+    # Get existing special prize winners
+    special_prizes = {}
+    for prize_type in ['longest_drive', 'closest_hole', 'most_birdies']:
+        prize = SpecialPrize.query.filter_by(tournament_id=tournament.id, prize_type=prize_type).first()
+        special_prizes[prize_type] = prize
+    
+    return render_template('special_prizes.html',
+                         tournament=tournament,
+                         players=players,
+                         special_prizes=special_prizes)
+
+@app.route('/award_special_prize', methods=['POST'])
+def award_special_prize():
+    """Award a special prize to a player"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    prize_type = request.form.get('prize_type')
+    player_id = request.form.get('player_id')
+    
+    if not prize_type or not player_id:
+        flash('Please select both prize type and player.', 'error')
+        return redirect(url_for('special_prizes'))
+    
+    # Remove existing prize of this type
+    existing_prize = SpecialPrize.query.filter_by(tournament_id=tournament.id, prize_type=prize_type).first()
+    if existing_prize:
+        db.session.delete(existing_prize)
+    
+    # Create new prize
+    new_prize = SpecialPrize(
+        tournament_id=tournament.id,
+        prize_type=prize_type,
+        player_id=int(player_id)
+    )
+    db.session.add(new_prize)
+    db.session.commit()
+    
+    player = Player.query.get(player_id)
+    flash(f'{prize_type.replace("_", " ").title()} prize awarded to {player.name}!', 'success')
+    
+    return redirect(url_for('special_prizes'))
+
 def calculate_leaderboard(tournament_id):
     """Calculate tournament leaderboard with cumulative scores"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
@@ -321,6 +395,6 @@ def calculate_leaderboard(tournament_id):
     
     for i, player_data in enumerate(leaderboard):
         player_data['rank'] = i + 1
-        player_data['prize'] = prize_distribution.get(i + 1, 0)
+        player_data['prize'] = prize_distribution['main_prizes'].get(i + 1, 0)
     
     return leaderboard

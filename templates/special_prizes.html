@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Special Prizes - Pinaclepoint Golf{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Special Prizes Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h1 class="card-title mb-0">
+                        <i class="fas fa-award me-2"></i>
+                        Special Skill Prizes
+                    </h1>
+                    <p class="card-text mb-0">Award prizes for special achievements</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prize Management -->
+    <div class="row">
+        {% set prize_info = {
+            'longest_drive': {'name': 'Longest Drive', 'icon': 'fas fa-golf-ball', 'description': 'Furthest drive of the tournament'},
+            'closest_hole': {'name': 'Closest to the Hole', 'icon': 'fas fa-target', 'description': 'Closest ball to the pin'},
+            'most_birdies': {'name': 'Most Birdies', 'icon': 'fas fa-trophy', 'description': 'Most birdies scored in tournament'}
+        } %}
+        
+        {% for prize_type, info in prize_info.items() %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="{{ info.icon }} me-2"></i>
+                        {{ info.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ info.description }}</p>
+                    <p class="text-success mb-3">
+                        <strong>Prize: R15,000</strong>
+                    </p>
+                    
+                    {% if special_prizes[prize_type] %}
+                    <div class="alert alert-success">
+                        <strong>Winner:</strong> {{ special_prizes[prize_type].player.name }}
+                    </div>
+                    {% endif %}
+                    
+                    <form method="POST" action="{{ url_for('award_special_prize') }}">
+                        <input type="hidden" name="prize_type" value="{{ prize_type }}">
+                        <div class="mb-3">
+                            <label class="form-label">Select Winner:</label>
+                            <select name="player_id" class="form-select" required>
+                                <option value="">Choose player...</option>
+                                {% for player in players %}
+                                <option value="{{ player.id }}" 
+                                        {% if special_prizes[prize_type] and special_prizes[prize_type].player_id == player.id %}selected{% endif %}>
+                                    {{ player.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-award me-2"></i>
+                            Award Prize
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Back to Admin -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Admin Panel
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

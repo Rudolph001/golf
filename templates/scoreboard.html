@@ -157,7 +157,7 @@
                     <!-- Main Tournament Prizes -->
                     <h5 class="text-warning mb-2">Tournament Placing</h5>
                     <div class="row mb-3">
-                        {% for rank, prize in prize_distribution.items() %}
+                        {% for rank, prize in prize_distribution.main_prizes.items() %}
                         <div class="col-md-3 col-6 mb-2">
                             <strong>{{ rank }}{% if rank == 1 %}st{% elif rank == 2 %}nd{% elif rank == 3 %}rd{% else %}th{% endif %} Place:</strong>
                             <span class="text-success ms-1">R{{ "{:,}".format(prize) }}</span>
