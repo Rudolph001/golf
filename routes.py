@@ -287,6 +287,94 @@ def reset_tournament():
         flash('Error resetting tournament. Please try again.', 'error')
         return redirect(url_for('admin'))
 
+@app.route('/add_player', methods=['POST'])
+def add_player():
+    """Add a new player to the existing tournament"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash('No tournament found. Please setup the tournament first.', 'error')
+        return redirect(url_for('player_setup'))
+    
+    player_name = request.form.get('player_name')
+    handicap = request.form.get('handicap', 18)
+    
+    if not player_name or not player_name.strip():
+        flash('Player name is required.', 'error')
+        return redirect(url_for('admin'))
+    
+    # Check if player name already exists
+    existing_player = Player.query.filter_by(
+        tournament_id=tournament.id, 
+        name=player_name.strip()
+    ).first()
+    
+    if existing_player:
+        flash(f'Player "{player_name}" already exists in this tournament.', 'error')
+        return redirect(url_for('admin'))
+    
+    # Check maximum player limit
+    current_player_count = Player.query.filter_by(tournament_id=tournament.id).count()
+    if current_player_count >= 20:
+        flash('Maximum 20 players allowed per tournament.', 'error')
+        return redirect(url_for('admin'))
+    
+    try:
+        # Create new player
+        new_player = Player(
+            name=player_name.strip(),
+            tournament_id=tournament.id,
+            handicap=int(handicap)
+        )
+        db.session.add(new_player)
+        
+        # Create empty score records for existing rounds
+        rounds = Round.query.filter_by(tournament_id=tournament.id).all()
+        for round_obj in rounds:
+            score = Score(player_id=new_player.id, round_id=round_obj.id)
+            db.session.add(score)
+        
+        db.session.commit()
+        flash(f'Player "{player_name}" has been added to the tournament successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error adding player. Please try again.', 'error')
+    
+    return redirect(url_for('admin'))
+
+@app.route('/remove_player', methods=['POST'])
+def remove_player():
+    """Remove a player from the tournament"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash('No tournament found.', 'error')
+        return redirect(url_for('admin'))
+    
+    player_id = request.form.get('player_id')
+    if not player_id:
+        flash('Please select a player to remove.', 'error')
+        return redirect(url_for('admin'))
+    
+    try:
+        player = Player.query.get_or_404(player_id)
+        player_name = player.name
+        
+        # Delete all scores for this player
+        Score.query.filter_by(player_id=player_id).delete()
+        
+        # Delete any special prizes for this player
+        SpecialPrize.query.filter_by(player_id=player_id).delete()
+        
+        # Delete the player
+        db.session.delete(player)
+        db.session.commit()
+        
+        flash(f'Player "{player_name}" has been removed from the tournament.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error removing player. Please try again.', 'error')
+    
+    return redirect(url_for('admin'))
+
 @app.route('/day/<int:day>')
 def day_scorecard(day):
     """Show scorecard entry for a specific day"""
