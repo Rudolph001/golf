@@ -48,7 +48,7 @@ def player_setup():
     if request.method == 'POST':
         # Create tournament
         tournament = Tournament(
-            name="The Pinecrest Family Championship",
+            name="The Pinicalpoint Family Champions Cup",
             start_date=date.today()
         )
         db.session.add(tournament)

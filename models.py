@@ -4,7 +4,7 @@ from sqlalchemy import func
 
 class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, default="The Pinecrest Family Championship")
+    name = db.Column(db.String(100), nullable=False, default="The Pinicalpoint Family Champions Cup")
     start_date = db.Column(db.Date, nullable=False)
     total_prize_pool = db.Column(db.Integer, default=600000)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
