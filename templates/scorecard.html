@@ -57,14 +57,14 @@
                                     <tr class="table-info">
                                         <td><strong>Par</strong></td>
                                         {% for hole in range(1, 10) %}
-                                        <td class="text-center"><strong>4</strong></td> <!-- Simplified for demo -->
+                                        <td class="text-center"><strong>{{ course.holes[hole-1].par }}</strong></td>
                                         {% endfor %}
-                                        <td class="text-center bg-warning"><strong>36</strong></td>
+                                        <td class="text-center bg-warning"><strong>35</strong></td>
                                     </tr>
                                     <tr class="table-secondary">
                                         <td><strong>Handicap</strong></td>
                                         {% for hole in range(1, 10) %}
-                                        <td class="text-center">{{ hole }}</td>
+                                        <td class="text-center">{{ course.holes[hole-1].handicap }}</td>
                                         {% endfor %}
                                         <td class="text-center bg-warning">-</td>
                                     </tr>
@@ -115,14 +115,14 @@
                                     <tr class="table-info">
                                         <td><strong>Par</strong></td>
                                         {% for hole in range(10, 19) %}
-                                        <td class="text-center"><strong>4</strong></td> <!-- Simplified for demo -->
+                                        <td class="text-center"><strong>{{ course.holes[hole-1].par }}</strong></td>
                                         {% endfor %}
-                                        <td class="text-center bg-warning"><strong>36</strong></td>
+                                        <td class="text-center bg-warning"><strong>37</strong></td>
                                     </tr>
                                     <tr class="table-secondary">
                                         <td><strong>Handicap</strong></td>
                                         {% for hole in range(10, 19) %}
-                                        <td class="text-center">{{ hole }}</td>
+                                        <td class="text-center">{{ course.holes[hole-1].handicap }}</td>
                                         {% endfor %}
                                         <td class="text-center bg-warning">-</td>
                                     </tr>

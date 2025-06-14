@@ -157,23 +157,25 @@ class SpecialPrize(db.Model):
 # Pinaclepoint Golf Estate course data
 PINACLEPOINT_COURSE = {
     'holes': [
-        {'number': 1, 'par': 4, 'yards': 350, 'handicap': 9},
-        {'number': 2, 'par': 3, 'yards': 165, 'handicap': 17},
-        {'number': 3, 'par': 5, 'yards': 520, 'handicap': 3},
-        {'number': 4, 'par': 4, 'yards': 380, 'handicap': 11},
-        {'number': 5, 'par': 4, 'yards': 410, 'handicap': 5},
-        {'number': 6, 'par': 3, 'yards': 145, 'handicap': 15},
-        {'number': 7, 'par': 4, 'yards': 395, 'handicap': 7},
-        {'number': 8, 'par': 5, 'yards': 485, 'handicap': 1},
-        {'number': 9, 'par': 4, 'yards': 425, 'handicap': 13},
-        {'number': 10, 'par': 4, 'yards': 365, 'handicap': 10},
-        {'number': 11, 'par': 3, 'yards': 175, 'handicap': 18},
-        {'number': 12, 'par': 5, 'yards': 545, 'handicap': 2},
-        {'number': 13, 'par': 4, 'yards': 400, 'handicap': 12},
-        {'number': 14, 'par': 4, 'yards': 385, 'handicap': 6},
-        {'number': 15, 'par': 3, 'yards': 155, 'handicap': 16},
-        {'number': 16, 'par': 4, 'yards': 435, 'handicap': 4},
-        {'number': 17, 'par': 5, 'yards': 510, 'handicap': 8},
-        {'number': 18, 'par': 4, 'yards': 445, 'handicap': 14},
+        # Front Nine - Par 35
+        {'number': 1, 'par': 4, 'yards': 369, 'meters': 337, 'handicap': 12},
+        {'number': 2, 'par': 4, 'yards': 340, 'meters': 311, 'handicap': 8},
+        {'number': 3, 'par': 4, 'yards': 457, 'meters': 418, 'handicap': 16},
+        {'number': 4, 'par': 4, 'yards': 439, 'meters': 401, 'handicap': 2},
+        {'number': 5, 'par': 5, 'yards': 522, 'meters': 477, 'handicap': 18},
+        {'number': 6, 'par': 4, 'yards': 355, 'meters': 325, 'handicap': 10},
+        {'number': 7, 'par': 3, 'yards': 129, 'meters': 118, 'handicap': 14},
+        {'number': 8, 'par': 4, 'yards': 350, 'meters': 320, 'handicap': 6},
+        {'number': 9, 'par': 3, 'yards': 185, 'meters': 169, 'handicap': 4},
+        # Back Nine - Par 37
+        {'number': 10, 'par': 4, 'yards': 368, 'meters': 337, 'handicap': 11},
+        {'number': 11, 'par': 4, 'yards': 374, 'meters': 342, 'handicap': 13},
+        {'number': 12, 'par': 4, 'yards': 375, 'meters': 343, 'handicap': 5},
+        {'number': 13, 'par': 3, 'yards': 133, 'meters': 122, 'handicap': 15},
+        {'number': 14, 'par': 4, 'yards': 408, 'meters': 373, 'handicap': 9},
+        {'number': 15, 'par': 4, 'yards': 356, 'meters': 326, 'handicap': 17},
+        {'number': 16, 'par': 5, 'yards': 579, 'meters': 529, 'handicap': 1},
+        {'number': 17, 'par': 3, 'yards': 226, 'meters': 207, 'handicap': 3},
+        {'number': 18, 'par': 5, 'yards': 495, 'meters': 453, 'handicap': 7},
     ]
 }

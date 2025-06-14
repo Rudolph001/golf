@@ -96,18 +96,30 @@ function calculateTotals() {
         }
     }
     
-    // Calculate Stableford points (simplified)
+    // Calculate Stableford points (using actual par values)
     const stablefordElement = document.getElementById('stableford-points');
     if (stablefordElement && totalStrokes > 0) {
         let stablefordPoints = 0;
+        
+        // Par values for each hole based on Pinaclepoint course
+        const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
         
         for (let i = 1; i <= 18; i++) {
             const input = document.querySelector(`input[name="hole_${i}"]`);
             if (input && input.value && !isNaN(input.value)) {
                 const score = parseInt(input.value);
-                const par = 4; // Simplified - assuming all holes are par 4
-                const points = Math.max(0, 6 - score); // Stableford points calculation
-                stablefordPoints += points;
+                const par = parValues[i-1];
+                // Stableford points: Eagle=4, Birdie=3, Par=2, Bogey=1, Double bogey or worse=0
+                if (score <= par - 2) {
+                    stablefordPoints += 4; // Eagle or better
+                } else if (score === par - 1) {
+                    stablefordPoints += 3; // Birdie
+                } else if (score === par) {
+                    stablefordPoints += 2; // Par
+                } else if (score === par + 1) {
+                    stablefordPoints += 1; // Bogey
+                }
+                // Double bogey or worse = 0 points (no addition needed)
             }
         }
         
@@ -127,11 +139,14 @@ function validateScore(event) {
         input.classList.remove('is-invalid');
         hideTooltip(input);
         
-        // Add visual feedback for special scores
-        const par = 4; // Simplified
+        // Add visual feedback for special scores using actual par values
+        const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
+        const holeNumber = parseInt(input.name.replace('hole_', ''));
+        const par = parValues[holeNumber - 1];
+        
         input.classList.remove('birdie', 'eagle', 'bogey', 'double-bogey');
         
-        if (value === par - 2) {
+        if (value <= par - 2) {
             input.classList.add('eagle');
             input.style.backgroundColor = '#d4edda';
         } else if (value === par - 1) {
