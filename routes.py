@@ -158,6 +158,37 @@ def update_score():
     
     return redirect(url_for('scorecard', player_id=score.player_id, round_id=score.round_id))
 
+@app.route('/clear_scores', methods=['POST'])
+def clear_scores():
+    """Clear all scores but keep players and tournament"""
+    try:
+        # Delete all scores
+        Score.query.delete()
+        db.session.commit()
+        flash('All scores have been cleared successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error clearing scores. Please try again.', 'error')
+    
+    return redirect(url_for('admin'))
+
+@app.route('/reset_tournament', methods=['POST'])
+def reset_tournament():
+    """Complete tournament reset - removes all data"""
+    try:
+        # Delete all data in reverse dependency order
+        Score.query.delete()
+        Round.query.delete()
+        Player.query.delete()
+        Tournament.query.delete()
+        db.session.commit()
+        flash('Tournament has been completely reset!', 'success')
+        return redirect(url_for('player_setup'))
+    except Exception as e:
+        db.session.rollback()
+        flash('Error resetting tournament. Please try again.', 'error')
+        return redirect(url_for('admin'))
+
 def calculate_leaderboard(tournament_id):
     """Calculate tournament leaderboard with cumulative scores"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
