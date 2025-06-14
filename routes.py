@@ -391,11 +391,15 @@ def calculate_leaderboard(tournament_id):
                     player_data['rounds_completed'] += 1
         
         # Calculate special prizes won by this player
-        special_prizes = SpecialPrize.query.filter_by(
-            tournament_id=tournament_id, 
-            player_id=player.id
-        ).all()
-        player_data['special_prizes_won'] = len(special_prizes) * 50000  # R50,000 per special prize
+        try:
+            special_prizes = SpecialPrize.query.filter_by(
+                tournament_id=tournament_id, 
+                player_id=player.id
+            ).all()
+            player_data['special_prizes_won'] = len(special_prizes) * 50000  # R50,000 per special prize
+        except Exception:
+            # Handle case where day column doesn't exist yet
+            player_data['special_prizes_won'] = 0
         
         leaderboard.append(player_data)
     
