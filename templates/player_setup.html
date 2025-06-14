@@ -1,7 +1,4 @@
-` tags.
 
-```python
-<replit_final_file>
 {% extends "base.html" %}
 
 {% block title %}Tournament Setup - Pinaclepoint Golf{% endblock %}
@@ -80,13 +77,13 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="mb-0">Player Registration</h3>
-                    <small class="text-muted">Enter the names of all 8 tournament participants</small>
+                    <small class="text-muted">Enter the names of all tournament participants</small>
                 </div>
                 <div class="card-body">
                     <form method="POST">
-                        <div id="players-container">
-                            <!-- Initial 8 players -->
-                            {% for i in range(1, 9) %}
+                        <div class="row" id="players-container">
+                            <!-- Initial 4 players (minimum required) -->
+                            {% for i in range(1, 5) %}
                             <div class="col-md-6 mb-3 player-entry">
                                 <div class="row">
                                     <div class="col-8">
@@ -100,7 +97,7 @@
                                                placeholder="Enter player name"
                                                required>
                                     </div>
-                                    <div class="col-3">
+                                    <div class="col-4">
                                         <label for="handicap_{{ i }}" class="form-label">
                                             <i class="fas fa-golf-ball me-1"></i>Handicap
                                         </label>
@@ -113,13 +110,6 @@
                                                max="36"
                                                value="18"
                                                required>
-                                    </div>
-                                    <div class="col-1 d-flex align-items-end">
-                                        {% if i > 8 %}
-                                        <button type="button" class="btn btn-sm btn-outline-danger remove-player">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -137,7 +127,7 @@
 
                         <div class="text-center mt-4">
                             <div class="mb-3">
-                                <span class="badge bg-info fs-6" id="player-count">Players: 8</span>
+                                <span class="badge bg-info fs-6" id="player-count">Players: 4</span>
                             </div>
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-play me-2"></i>
@@ -155,8 +145,8 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="mb-0">Prize Distribution</h4>
-                    <small class="text-muted">Final ranking determines prize allocation</small>
+                    <h4 class="mb-0">Prize Distribution Preview</h4>
+                    <small class="text-muted">Final ranking determines prize allocation (sample for 8 players)</small>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -165,7 +155,7 @@
                                 <div class="card-body py-2">
                                     <i class="fas fa-crown text-warning mb-1"></i>
                                     <h5 class="mb-1">1st Place</h5>
-                                    <strong class="text-success">R250,000</strong>
+                                    <strong class="text-success">R140,000</strong>
                                 </div>
                             </div>
                         </div>
@@ -174,7 +164,7 @@
                                 <div class="card-body py-2">
                                     <i class="fas fa-medal text-secondary mb-1"></i>
                                     <h5 class="mb-1">2nd Place</h5>
-                                    <strong class="text-success">R200,000</strong>
+                                    <strong class="text-success">R100,000</strong>
                                 </div>
                             </div>
                         </div>
@@ -183,7 +173,7 @@
                                 <div class="card-body py-2">
                                     <i class="fas fa-trophy text-info mb-1"></i>
                                     <h5 class="mb-1">3rd Place</h5>
-                                    <strong class="text-success">R250,000</strong>
+                                    <strong class="text-success">R75,000</strong>
                                 </div>
                             </div>
                         </div>
@@ -192,47 +182,36 @@
                                 <div class="card-body py-2">
                                     <i class="fas fa-money-bill-wave text-success mb-1"></i>
                                     <h5 class="mb-1">Total Pool</h5>
-                                    <strong class="text-primary">R{{ "{:,}".format(1000000) }}</strong>
+                                    <strong class="text-primary">R1,000,000</strong>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 col-6 mb-2 text-center">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-6 mb-2 text-center">
                             <div class="card">
                                 <div class="card-body py-2">
-                                    <h6 class="mb-1">4th Place</h6>
-                                    <strong class="text-success">R175,000</strong>
+                                    <h6 class="mb-1">Daily Special Prizes</h6>
+                                    <strong class="text-success">R30,000 each</strong>
+                                    <small class="d-block text-muted">15 prizes across 3 days</small>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 col-6 mb-2 text-center">
+                        <div class="col-md-4 col-6 mb-2 text-center">
                             <div class="card">
                                 <div class="card-body py-2">
-                                    <h6 class="mb-1">5th Place</h6>
-                                    <strong class="text-success">R125,000</strong>
+                                    <h6 class="mb-1">Main Tournament</h6>
+                                    <strong class="text-success">R550,000</strong>
+                                    <small class="d-block text-muted">Position-based prizes</small>
                                 </div>
                             </div>
                         </div>
-                         <div class="col-md-3 col-6 mb-2 text-center">
+                        <div class="col-md-4 col-6 mb-2 text-center">
                             <div class="card">
                                 <div class="card-body py-2">
-                                    <h6 class="mb-1">Longest Drive</h6>
-                                    <strong class="text-success">R100,000</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6 mb-2 text-center">
-                            <div class="card">
-                                <div class="card-body py-2">
-                                    <h6 class="mb-1">Closest to the Hole</h6>
-                                    <strong class="text-success">R50,000</strong>
-                                </div>
-                            </div>
-                        </div>
-                         <div class="col-md-3 col-6 mb-2 text-center">
-                            <div class="card">
-                                <div class="card-body py-2">
-                                    <h6 class="mb-1">Most Birdies</h6>
-                                    <strong class="text-success">R50,000</strong>
+                                    <h6 class="mb-1">Everyone Wins!</h6>
+                                    <strong class="text-info">Guaranteed Prize</strong>
+                                    <small class="d-block text-muted">All participants receive money</small>
                                 </div>
                             </div>
                         </div>
@@ -242,17 +221,16 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
 
 <script>
-let playerCount = 8;
+let playerCount = 4; // Start with 4 players (minimum required)
 
 document.addEventListener('DOMContentLoaded', function() {
     const addPlayerBtn = document.getElementById('add-player');
     const playersContainer = document.getElementById('players-container');
     const playerCountBadge = document.getElementById('player-count');
 
+    // Add player button click handler
     addPlayerBtn.addEventListener('click', function() {
         if (playerCount < 20) {
             playerCount++;
@@ -265,17 +243,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle remove player buttons
+    // Handle remove player buttons (for dynamically added players)
     playersContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-player') || e.target.parentElement.classList.contains('remove-player')) {
+        if (e.target.classList.contains('remove-player') || 
+            (e.target.parentElement && e.target.parentElement.classList.contains('remove-player'))) {
             const playerEntry = e.target.closest('.player-entry');
-            playerEntry.remove();
-            playerCount--;
-            updatePlayerCount();
-            renumberPlayers();
+            if (playerEntry && playerCount > 4) { // Don't allow removing below minimum
+                playerEntry.remove();
+                playerCount--;
+                updatePlayerCount();
+                renumberPlayers();
 
-            if (playerCount < 20) {
-                addPlayerBtn.style.display = 'inline-block';
+                if (playerCount < 20) {
+                    addPlayerBtn.style.display = 'inline-block';
+                }
             }
         }
     });
@@ -311,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
                            required>
                 </div>
                 <div class="col-1 d-flex align-items-end">
-                    <button type="button" class="btn btn-sm btn-outline-danger remove-player">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-player" title="Remove Player">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -333,22 +314,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const handicapLabel = entry.querySelector('label[for^="handicap_"]');
             const handicapInput = entry.querySelector('input[name^="handicap_"]');
 
-            label.setAttribute('for', `player_${number}`);
-            label.innerHTML = `<i class="fas fa-user me-1"></i>Player ${number}`;
-            nameInput.setAttribute('id', `player_${number}`);
-            nameInput.setAttribute('name', `player_${number}`);
+            if (label && nameInput) {
+                label.setAttribute('for', `player_${number}`);
+                label.innerHTML = `<i class="fas fa-user me-1"></i>Player ${number}`;
+                nameInput.setAttribute('id', `player_${number}`);
+                nameInput.setAttribute('name', `player_${number}`);
+            }
 
-            handicapLabel.setAttribute('for', `handicap_${number}`);
-            handicapInput.setAttribute('id', `handicap_${number}`);
-            handicapInput.setAttribute('name', `handicap_${number}`);
+            if (handicapLabel && handicapInput) {
+                handicapLabel.setAttribute('for', `handicap_${number}`);
+                handicapInput.setAttribute('id', `handicap_${number}`);
+                handicapInput.setAttribute('name', `handicap_${number}`);
+            }
         });
     }
 });
 </script>
-<script>
-    function addPlayer() {
-        // You can add your logic here to add a new player dynamically.
-        // For example, you can clone an existing player input field and append it to the form.
-        alert('Add player functionality needs implementation.');
-    }
-</script>
+{% endblock %}
