@@ -66,6 +66,14 @@ function initializeScorecard() {
     });
 }
 
+// Function to update leaderboard with Arccos data
+function updateLeaderboardArccosData() {
+    // Placeholder function for Arccos data updates
+    console.log('Arccos data update requested');
+    // This function can be expanded to handle real-time Arccos data updates
+}
+
+// Function to calculate and update totals
 function calculateTotals() {
     let frontNine = 0;
     let backNine = 0;
