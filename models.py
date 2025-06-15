@@ -155,6 +155,72 @@ class SpecialPrize(db.Model):
     player = db.relationship('Player', backref='special_prizes')
     tournament = db.relationship('Tournament', backref='special_prizes')
 
+class HandicapPlayer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    calculated_handicap = db.Column(db.Integer, nullable=True)
+    is_applied_to_tournament = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    rounds = db.relationship('HandicapRound', backref='player', lazy=True, cascade='all, delete-orphan')
+
+class HandicapRound(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('handicap_player.id'), nullable=False)
+    round_number = db.Column(db.Integer, nullable=False)  # 1, 2, 3, 4
+    
+    # Hole-by-hole scores (18 holes)
+    hole_1 = db.Column(db.Integer)
+    hole_2 = db.Column(db.Integer)
+    hole_3 = db.Column(db.Integer)
+    hole_4 = db.Column(db.Integer)
+    hole_5 = db.Column(db.Integer)
+    hole_6 = db.Column(db.Integer)
+    hole_7 = db.Column(db.Integer)
+    hole_8 = db.Column(db.Integer)
+    hole_9 = db.Column(db.Integer)
+    hole_10 = db.Column(db.Integer)
+    hole_11 = db.Column(db.Integer)
+    hole_12 = db.Column(db.Integer)
+    hole_13 = db.Column(db.Integer)
+    hole_14 = db.Column(db.Integer)
+    hole_15 = db.Column(db.Integer)
+    hole_16 = db.Column(db.Integer)
+    hole_17 = db.Column(db.Integer)
+    hole_18 = db.Column(db.Integer)
+    
+    # Calculated values
+    total_score = db.Column(db.Integer)
+    differential = db.Column(db.Float)  # Score differential for handicap calculation
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def get_hole_score(self, hole_number):
+        """Get score for a specific hole (1-18)"""
+        return getattr(self, f'hole_{hole_number}', None)
+    
+    def set_hole_score(self, hole_number, score):
+        """Set score for a specific hole (1-18)"""
+        setattr(self, f'hole_{hole_number}', score)
+    
+    def calculate_differential(self):
+        """Calculate score differential for handicap calculation"""
+        hole_scores = []
+        for i in range(1, 19):
+            score = self.get_hole_score(i)
+            if score is not None:
+                hole_scores.append(score)
+        
+        if len(hole_scores) == 18:
+            self.total_score = sum(hole_scores)
+            # Differential = (Score - Course Rating) × 113 / Slope Rating
+            # Using Pinaclepoint: Course Rating = 72, Slope = 113
+            course_rating = 72
+            slope_rating = 113
+            self.differential = (self.total_score - course_rating) * 113 / slope_rating
+        
+        return self.differential
+
 # Pinaclepoint Golf Estate course data
 PINACLEPOINT_COURSE = {
     'holes': [

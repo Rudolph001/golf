@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db
-from models import Tournament, Player, Round, Score, SpecialPrize, PINACLEPOINT_COURSE
+from models import Tournament, Player, Round, Score, SpecialPrize, HandicapPlayer, HandicapRound, PINACLEPOINT_COURSE
 from datetime import datetime, date
 from sqlalchemy import func
 
@@ -858,3 +858,212 @@ def calculate_leaderboard(tournament_id):
         i = j
     
     return leaderboard
+
+@app.route('/handicap_dashboard')
+def handicap_dashboard():
+    """Handicap calculation dashboard"""
+    handicap_players = HandicapPlayer.query.all()
+    
+    # Calculate data for each player
+    players_data = []
+    for player in handicap_players:
+        rounds = HandicapRound.query.filter_by(player_id=player.id).order_by(HandicapRound.round_number).all()
+        
+        # Calculate handicap if enough rounds
+        calculated_handicap = calculate_handicap_for_player(player.id)
+        
+        # Prepare round data
+        rounds_data = []
+        for round_obj in rounds:
+            rounds_data.append({
+                'round_number': round_obj.round_number,
+                'score': round_obj.total_score,
+                'differential': round_obj.differential
+            })
+        
+        players_data.append({
+            'player': player,
+            'rounds': rounds_data,
+            'rounds_count': len(rounds),
+            'calculated_handicap': calculated_handicap
+        })
+    
+    return render_template('handicap_dashboard.html', handicap_players=players_data)
+
+@app.route('/add_handicap_player', methods=['POST'])
+def add_handicap_player():
+    """Add a new player for handicap calculation"""
+    player_name = request.form.get('player_name')
+    
+    if not player_name or not player_name.strip():
+        flash('Player name is required.', 'error')
+        return redirect(url_for('handicap_dashboard'))
+    
+    # Check if player already exists
+    existing_player = HandicapPlayer.query.filter_by(name=player_name.strip()).first()
+    if existing_player:
+        flash(f'Player "{player_name}" already exists.', 'error')
+        return redirect(url_for('handicap_dashboard'))
+    
+    try:
+        new_player = HandicapPlayer(name=player_name.strip())
+        db.session.add(new_player)
+        db.session.commit()
+        flash(f'Player "{player_name}" added successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error adding player. Please try again.', 'error')
+    
+    return redirect(url_for('handicap_dashboard'))
+
+@app.route('/handicap_scorecard/<int:player_id>')
+def handicap_scorecard(player_id):
+    """Enter scores for handicap calculation round"""
+    player = HandicapPlayer.query.get_or_404(player_id)
+    
+    # Check if player already has 4 rounds
+    existing_rounds = HandicapRound.query.filter_by(player_id=player_id).count()
+    if existing_rounds >= 4:
+        flash('Player already has 4 rounds completed.', 'warning')
+        return redirect(url_for('handicap_dashboard'))
+    
+    next_round_number = existing_rounds + 1
+    
+    return render_template('handicap_scorecard.html',
+                         player=player,
+                         next_round_number=next_round_number,
+                         course=PINACLEPOINT_COURSE)
+
+@app.route('/save_handicap_round', methods=['POST'])
+def save_handicap_round():
+    """Save handicap calculation round scores"""
+    player_id = request.form.get('player_id')
+    round_number = request.form.get('round_number')
+    
+    player = HandicapPlayer.query.get_or_404(player_id)
+    
+    # Check if this round already exists
+    existing_round = HandicapRound.query.filter_by(
+        player_id=player_id, 
+        round_number=round_number
+    ).first()
+    
+    if existing_round:
+        flash('This round already exists for this player.', 'error')
+        return redirect(url_for('handicap_dashboard'))
+    
+    try:
+        # Create new handicap round
+        handicap_round = HandicapRound(
+            player_id=player_id,
+            round_number=int(round_number)
+        )
+        
+        # Save hole scores
+        for hole in range(1, 19):
+            hole_score = request.form.get(f'hole_{hole}')
+            if hole_score and hole_score.isdigit():
+                handicap_round.set_hole_score(hole, int(hole_score))
+        
+        # Calculate differential
+        handicap_round.calculate_differential()
+        
+        db.session.add(handicap_round)
+        db.session.commit()
+        
+        # Recalculate player's handicap
+        new_handicap = calculate_handicap_for_player(player_id)
+        if new_handicap is not None:
+            player.calculated_handicap = new_handicap
+            db.session.commit()
+        
+        flash(f'Round {round_number} saved successfully for {player.name}!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error saving round. Please try again.', 'error')
+    
+    return redirect(url_for('handicap_dashboard'))
+
+@app.route('/apply_handicap', methods=['POST'])
+def apply_handicap():
+    """Apply calculated handicap to tournament player"""
+    player_id = request.form.get('player_id')
+    handicap = request.form.get('handicap')
+    
+    handicap_player = HandicapPlayer.query.get_or_404(player_id)
+    tournament = Tournament.query.first()
+    
+    if not tournament:
+        flash('No tournament found. Please set up the tournament first.', 'error')
+        return redirect(url_for('handicap_dashboard'))
+    
+    try:
+        # Check if player already exists in tournament
+        existing_tournament_player = Player.query.filter_by(
+            tournament_id=tournament.id,
+            name=handicap_player.name
+        ).first()
+        
+        if existing_tournament_player:
+            # Update existing player's handicap
+            existing_tournament_player.handicap = int(handicap)
+            flash(f'Updated {handicap_player.name}\'s handicap to {handicap} in tournament.', 'success')
+        else:
+            # Add new player to tournament with calculated handicap
+            new_tournament_player = Player(
+                name=handicap_player.name,
+                tournament_id=tournament.id,
+                handicap=int(handicap)
+            )
+            db.session.add(new_tournament_player)
+            
+            # Create empty score records for existing rounds
+            rounds = Round.query.filter_by(tournament_id=tournament.id).all()
+            for round_obj in rounds:
+                score = Score(player_id=new_tournament_player.id, round_id=round_obj.id)
+                db.session.add(score)
+            
+            flash(f'Added {handicap_player.name} to tournament with handicap {handicap}.', 'success')
+        
+        # Mark as applied
+        handicap_player.is_applied_to_tournament = True
+        db.session.commit()
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error applying handicap to tournament. Please try again.', 'error')
+    
+    return redirect(url_for('handicap_dashboard'))
+
+def calculate_handicap_for_player(player_id):
+    """Calculate handicap based on best rounds"""
+    rounds = HandicapRound.query.filter_by(player_id=player_id).all()
+    
+    if len(rounds) < 3:
+        return None  # Need at least 3 rounds
+    
+    # Calculate differentials for all rounds
+    differentials = []
+    for round_obj in rounds:
+        if round_obj.differential is not None:
+            differentials.append(round_obj.differential)
+    
+    if len(differentials) < 3:
+        return None
+    
+    # Sort differentials and take best ones
+    differentials.sort()
+    
+    if len(differentials) >= 4:
+        # Use best 3 out of 4+ rounds
+        best_differentials = differentials[:3]
+    else:
+        # Use all available (minimum 3)
+        best_differentials = differentials
+    
+    # Calculate handicap: average of best differentials × 0.96
+    average_differential = sum(best_differentials) / len(best_differentials)
+    handicap = round(average_differential * 0.96)
+    
+    # Cap handicap at reasonable limits (0-36)
+    return max(0, min(36, handicap))
