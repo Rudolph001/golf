@@ -78,21 +78,21 @@ def get_prize_distribution(player_count):
                 'most_pars_front': 30000, 
                 'most_pars_back': 30000, 
                 'beat_handicap': 30000,
-                'straightest_drive': 30000,
+                'most_birdies': 30000,
                 'most_pars': 30000
             },
             'day_2': {
                 'most_pars_front': 30000, 
                 'most_pars_back': 30000, 
                 'beat_handicap': 30000,
-                'straightest_drive': 30000,
+                'most_birdies': 30000,
                 'most_pars': 30000
             },
             'day_3': {
                 'most_pars_front': 30000, 
                 'most_pars_back': 30000, 
                 'beat_handicap': 30000,
-                'straightest_drive': 30000,
+                'most_birdies': 30000,
                 'most_pars': 30000
             }
         }
@@ -434,7 +434,7 @@ def special_prizes():
     daily_special_prizes = {}
     for day in [1, 2, 3]:
         daily_special_prizes[day] = {}
-        for prize_type in ['most_pars_front', 'most_pars_back', 'beat_handicap', 'straightest_drive', 'most_pars']:
+        for prize_type in ['most_pars_front', 'most_pars_back', 'beat_handicap', 'most_birdies', 'most_pars']:
             prize = SpecialPrize.query.filter_by(
                 tournament_id=tournament.id, 
                 day=day, 
@@ -566,12 +566,21 @@ def calculate_daily_special_prizes(tournament_id, day):
     else:
         winners['beat_handicap'] = []
     
-    # 4. Straightest Drive - third best overall score
-    sorted_scores = sorted(scores_with_data, key=lambda x: x.total_strokes)
-    if len(sorted_scores) >= 3:
-        winners['straightest_drive'] = [sorted_scores[2].player_id]
+    # 4. Most Birdies - count birdies (scores under par)
+    birdie_count = defaultdict(int)
+    for score in scores_with_data:
+        birdies = 0
+        for hole in range(1, 19):  # holes 1-18
+            hole_score = score.get_hole_score(hole)
+            if hole_score and hole_score < 4:  # assuming par 4, birdie = 3 or better
+                birdies += 1
+        birdie_count[score.player_id] = birdies
+    
+    if birdie_count:
+        max_birdies = max(birdie_count.values())
+        winners['most_birdies'] = [pid for pid, count in birdie_count.items() if count == max_birdies]
     else:
-        winners['straightest_drive'] = []
+        winners['most_birdies'] = []
     
     # 5. Most Pars Overall - player with most pars across all 18 holes
     total_pars = defaultdict(int)
