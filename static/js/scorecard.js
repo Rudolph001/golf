@@ -115,7 +115,10 @@ function calculateTotals() {
                 const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
                 const par = parValues[i-1];
 
-                // Apply traditional golf scoring symbols
+                // Display the net score (gross score - handicap strokes)
+                netScoreSpan.textContent = netScore;
+
+                // Apply traditional golf scoring symbols based on net score vs par
                 if (netScore <= par - 3) {
                     // Albatross/Double Eagle - triangle
                     netScoreSpan.innerHTML = `<span class="scoring-symbol triangle">${netScore}</span>`;
@@ -163,7 +166,10 @@ function calculateTotals() {
                 const parValues = [4,4,4,4,5,4,3,4,3,4,4,4,3,4,4,5,3,5];
                 const par = parValues[i-1];
 
-                // Apply traditional golf scoring symbols
+                // Display the net score (gross score - handicap strokes)
+                netScoreSpan.textContent = netScore;
+
+                // Apply traditional golf scoring symbols based on net score vs par
                 if (netScore <= par - 3) {
                     // Albatross/Double Eagle - triangle
                     netScoreSpan.innerHTML = `<span class="scoring-symbol triangle">${netScore}</span>`;
