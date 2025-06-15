@@ -132,6 +132,56 @@
         </div>
     </div>
 
+    <!-- Player Handicap Management -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-golf-ball me-2"></i>
+                        Player Handicap Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Update player handicaps for tournament calculations.</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Player</th>
+                                    <th class="text-center">Current Handicap</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player in players %}
+                                <tr>
+                                    <td><strong>{{ player.name }}</strong></td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ player.handicap }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="POST" action="{{ url_for('update_player_handicap') }}" style="display: inline;" class="d-flex align-items-center justify-content-center">
+                                            <input type="hidden" name="player_id" value="{{ player.id }}">
+                                            <input type="number" name="new_handicap" value="{{ player.handicap }}" 
+                                                   min="0" max="36" class="form-control form-control-sm me-2" 
+                                                   style="width: 70px;" required>
+                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-save me-1"></i>Update
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Prize Money Eligibility Management -->
     <div class="row mb-4">
         <div class="col-12">
@@ -141,7 +191,7 @@
                         <i class="fas fa-money-bill-wave me-2"></i>
                         Prize Money Eligibility
                     </h5>
-                </div>
+                </div></div>
                 <div class="card-body">
                     <p class="text-muted mb-3">Manage which players are eligible for prize money. Non-eligible players will still appear in rankings but won't receive tournament placing prizes.</p>
                     

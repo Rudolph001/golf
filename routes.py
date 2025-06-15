@@ -523,6 +523,43 @@ def special_prizes():
                          daily_special_prizes=daily_special_prizes,
                          tournament_formats=TOURNAMENT_FORMATS)
 
+@app.route('/update_player_handicap', methods=['POST'])
+def update_player_handicap():
+    """Update a player's handicap"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash('No tournament found.', 'error')
+        return redirect(url_for('admin'))
+    
+    player_id = request.form.get('player_id')
+    new_handicap = request.form.get('new_handicap')
+    
+    if not player_id or new_handicap is None:
+        flash('Please provide valid player and handicap information.', 'error')
+        return redirect(url_for('admin'))
+    
+    try:
+        player = Player.query.get_or_404(player_id)
+        old_handicap = player.handicap
+        new_handicap_value = int(new_handicap)
+        
+        # Validate handicap range
+        if new_handicap_value < 0 or new_handicap_value > 36:
+            flash('Handicap must be between 0 and 36.', 'error')
+            return redirect(url_for('admin'))
+        
+        player.handicap = new_handicap_value
+        db.session.commit()
+        
+        flash(f'{player.name}\'s handicap updated from {old_handicap} to {new_handicap_value}.', 'success')
+    except ValueError:
+        flash('Invalid handicap value. Please enter a number between 0 and 36.', 'error')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error updating player handicap. Please try again.', 'error')
+    
+    return redirect(url_for('admin'))
+
 @app.route('/toggle_prize_eligibility', methods=['POST'])
 def toggle_prize_eligibility():
     """Toggle a player's prize money eligibility"""
