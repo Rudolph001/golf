@@ -236,11 +236,34 @@ def prize_money():
     player_count = len(Player.query.filter_by(tournament_id=tournament.id).all())
     prize_distribution = get_prize_distribution(player_count)
     
+    # Get actual special prize amounts from database
+    special_prizes = SpecialPrize.query.filter_by(tournament_id=tournament.id).all()
+    
+    # Calculate average special prize amounts for display
+    special_prize_amounts = {}
+    prize_counts = {}
+    
+    for prize in special_prizes:
+        key = f"{prize.day}_{prize.prize_type}"
+        if key not in special_prize_amounts:
+            special_prize_amounts[key] = 0
+            prize_counts[key] = 0
+        special_prize_amounts[key] += prize.amount
+        prize_counts[key] += 1
+    
+    # Calculate typical prize amount (use the most common amount or 10000 as fallback)
+    if special_prize_amounts:
+        typical_amount = max(set(prize.amount for prize in special_prizes), 
+                           key=lambda x: sum(1 for p in special_prizes if p.amount == x))
+    else:
+        typical_amount = 10000
+    
     return render_template('prize_money.html',
                          tournament=tournament,
                          leaderboard=leaderboard,
                          prize_distribution=prize_distribution,
-                         tournament_formats=TOURNAMENT_FORMATS)
+                         tournament_formats=TOURNAMENT_FORMATS,
+                         typical_special_prize=typical_amount)
 
 @app.route('/admin')
 def admin():
