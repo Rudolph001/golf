@@ -13,31 +13,58 @@ def generate_realistic_golf_scores():
     """Generate realistic golf scores based on hole difficulty and player skill"""
     holes_data = []
     
+    # Add some randomness to simulate different skill levels
+    player_skill_factor = random.uniform(0.8, 1.3)  # 0.8 = better player, 1.3 = higher handicap
+    
     for hole_info in PINACLEPOINT_COURSE['holes']:
         hole_num = hole_info['number']
         par = hole_info['par']
         handicap = hole_info['handicap']
         
-        # Generate realistic score based on hole difficulty
+        # Generate realistic score based on hole difficulty and player skill
         # Easier holes (higher handicap numbers) tend to be closer to par
-        if handicap >= 15:  # Easier holes
-            score_options = [par-1, par, par, par+1]
-            weights = [0.1, 0.6, 0.2, 0.1]
-        elif handicap >= 10:  # Medium holes
-            score_options = [par-1, par, par+1, par+2]
-            weights = [0.05, 0.4, 0.4, 0.15]
-        else:  # Difficult holes
-            score_options = [par, par+1, par+2, par+3]
-            weights = [0.3, 0.4, 0.25, 0.05]
+        if handicap >= 15:  # Easier holes (handicap 15-18)
+            if player_skill_factor < 1.0:  # Good player
+                score_options = [par-1, par, par, par+1]
+                weights = [0.15, 0.65, 0.15, 0.05]
+            else:  # Higher handicap player
+                score_options = [par, par, par+1, par+2]
+                weights = [0.4, 0.35, 0.2, 0.05]
+        elif handicap >= 10:  # Medium holes (handicap 10-14)
+            if player_skill_factor < 1.0:
+                score_options = [par-1, par, par+1, par+2]
+                weights = [0.1, 0.5, 0.3, 0.1]
+            else:
+                score_options = [par, par+1, par+2, par+3]
+                weights = [0.3, 0.4, 0.25, 0.05]
+        else:  # Difficult holes (handicap 1-9)
+            if player_skill_factor < 1.0:
+                score_options = [par, par+1, par+2, par+3]
+                weights = [0.4, 0.4, 0.15, 0.05]
+            else:
+                score_options = [par+1, par+2, par+3, par+4]
+                weights = [0.3, 0.4, 0.25, 0.05]
         
         score = random.choices(score_options, weights=weights)[0]
         score = max(1, score)  # Ensure minimum score of 1
+        
+        # Generate realistic putt count based on score
+        if score == par - 2:  # Eagle
+            putts = 1
+        elif score == par - 1:  # Birdie
+            putts = random.choice([1, 2])
+        elif score == par:  # Par
+            putts = random.choice([1, 2, 2])  # Most likely 2 putts
+        elif score == par + 1:  # Bogey
+            putts = random.choice([2, 3])
+        else:  # Double bogey or worse
+            putts = random.choice([2, 3, 4])
         
         holes_data.append({
             'hole_number': hole_num,
             'par': par,
             'strokes': score,
-            'putts': random.randint(1, 3) if score <= par + 2 else random.randint(2, 4)
+            'putts': putts
         })
     
     return holes_data

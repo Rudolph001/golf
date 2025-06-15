@@ -48,6 +48,9 @@
                                         <button class="btn btn-sm btn-outline-info" onclick="viewPlayerShotAnalysis({{ player.id }})">
                                             <i class="fas fa-chart-line"></i> Analysis
                                         </button>
+                                         <button class="btn btn-sm btn-outline-primary" onclick="viewPlayerScorecard('{{ player.id }}', '{{ player.name }}')">
+                                            <i class="fas fa-clipboard"></i> Scorecard
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -262,10 +265,10 @@
             </div>
             <div class="modal-body">
                 <p class="mb-3">Connect this player to their Arccos account by entering their connection details:</p>
-                
+
                 <form id="arccos-setup-form" method="POST" action="{{ url_for('setup_arccos_player') }}">
                     <input type="hidden" id="setup-player-id" name="player_id">
-                    
+
                     <div class="mb-3">
                         <label for="arccos-user-id" class="form-label">
                             <i class="fas fa-user me-1"></i>Arccos User ID/Email
@@ -274,7 +277,7 @@
                                placeholder="Enter Arccos account email or user ID" required>
                         <div class="form-text">This is the email address used to register with Arccos</div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="device-serial" class="form-label">
                             <i class="fas fa-microchip me-1"></i>Link Pro Device Serial
@@ -283,7 +286,7 @@
                                placeholder="Enter Link Pro device serial number">
                         <div class="form-text">Found on the Link Pro device or in the Arccos app settings</div>
                     </div>
-                    
+
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>How to find your details:</strong>
@@ -292,7 +295,7 @@
                             <li><strong>Device Serial:</strong> Check your Link Pro device or Arccos mobile app under Settings > Devices</li>
                         </ul>
                     </div>
-                    
+
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-link me-2"></i>Connect to Arccos
@@ -657,12 +660,12 @@ function autoFillAllScorecards() {
     if (!confirm('This will auto-fill all daily scorecards with shot data for Arccos connected players. This will overwrite any existing scores. Continue?')) {
         return;
     }
-    
+
     const button = event.target;
     const originalText = button.innerHTML;
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Auto-Filling...';
-    
+
     fetch('/auto_fill_all_scorecards', {
         method: 'POST',
         headers: {
@@ -696,6 +699,37 @@ function exportArccosData() {
 function refreshPlayerData() {
     if (arccosAPI.currentPlayer) {
         loadPlayerAnalytics(arccosAPI.currentPlayer);
+    }
+}
+
+function viewPlayerShotAnalysis(playerId) {
+    window.open(`/player_shot_analysis/${playerId}`, '_blank');
+}
+
+function viewPlayerScorecard(playerId, playerName) {
+    // Get the current tournament day or let user choose
+    const day = prompt(`View scorecard for ${playerName} - Enter day (1, 2, or 3):`, '1');
+    if (day && ['1', '2', '3'].includes(day)) {
+        // Get the round ID for this day
+        fetch('/get_round_id', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({day: parseInt(day)})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.round_id) {
+                window.open(`/scorecard/${playerId}/${data.round_id}`, '_blank');
+            } else {
+                alert('Round not found for this day.');
+            }
+        })
+        .catch(error => {
+            // Fallback: try to construct URL with day 1 round
+            window.open(`/scorecard/${playerId}/1`, '_blank');
+        });
     }
 }
 

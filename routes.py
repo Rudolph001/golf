@@ -1137,17 +1137,54 @@ def auto_fill_all_scorecards():
         success_count = len(result['success'])
         total_rounds = result['total_rounds_populated']
         
+        # Get sample scorecard data for verification
+        sample_data = {}
+        if result['success']:
+            # Get a sample of the filled data for the first successful player
+            first_player = result['success'][0]
+            player_name = first_player['player_name']
+            
+            # Find the player and get their latest scores
+            player = Player.query.filter_by(name=player_name, tournament_id=tournament.id).first()
+            if player:
+                rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
+                for round_obj in rounds:
+                    score = Score.query.filter_by(player_id=player.id, round_id=round_obj.id).first()
+                    if score and score.total_strokes:
+                        sample_data[f'day_{round_obj.day}'] = {
+                            'total_strokes': score.total_strokes,
+                            'first_9_holes': [score.get_hole_score(i) for i in range(1, 10)],
+                            'back_9_holes': [score.get_hole_score(i) for i in range(10, 19)]
+                        }
+        
         return jsonify({
             'success': True,
             'message': f'Auto-filled scorecards for {success_count} players across {total_rounds} rounds',
             'total_players_filled': success_count,
             'total_rounds_filled': total_rounds,
             'players_filled': result['success'],
-            'errors': result['errors']
+            'errors': result['errors'],
+            'sample_data': sample_data
         })
         
     except Exception as e:
         return jsonify({'error': f'Auto-fill failed: {str(e)}'}), 500
+
+@app.route('/get_round_id', methods=['POST'])
+def get_round_id():
+    """Helper route to get round ID by day"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return jsonify({'error': 'No tournament found'}), 400
+    
+    data = request.get_json()
+    day = data.get('day', 1)
+    
+    round_obj = Round.query.filter_by(tournament_id=tournament.id, day=day).first()
+    if round_obj:
+        return jsonify({'round_id': round_obj.id})
+    else:
+        return jsonify({'error': 'Round not found'}), 404
 
 @app.route('/disconnect_arccos_player/<int:player_id>', methods=['POST'])
 def disconnect_arccos_player(player_id):
