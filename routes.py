@@ -688,7 +688,7 @@ def calculate_leaderboard(tournament_id):
                 player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
                 player_data['is_tied'] = len(tied_players) > 1
                 player_data['tied_positions'] = positions_involved
-                player_data['prize_position'] = current_prize_rank  # Track prize position
+                player_data['prize_position'] = current_prize_rank
         elif len(prize_eligible_tied) == 1 and current_score is not None:
             # Single eligible player at this position
             player_data = prize_eligible_tied[0]
@@ -696,15 +696,15 @@ def calculate_leaderboard(tournament_id):
             player_data['prize'] = prize_distribution['main_prizes'].get(current_prize_rank, 0)
             player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
             player_data['is_tied'] = len(tied_players) > 1
-            player_data['prize_position'] = current_prize_rank  # Track prize position
-        elif len(prize_eligible_tied) == 1:
-            # Single eligible player with no score
-            player_data = prize_eligible_tied[0]
-            player_data['rank'] = current_rank
-            player_data['prize'] = 0
-            player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
-            player_data['is_tied'] = False
-            player_data['prize_position'] = None
+            player_data['prize_position'] = current_prize_rank
+        elif len(prize_eligible_tied) >= 1:
+            # Eligible players with no score
+            for player_data in prize_eligible_tied:
+                player_data['rank'] = current_rank
+                player_data['prize'] = 0
+                player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
+                player_data['is_tied'] = len(tied_players) > 1 if len(tied_players) > 1 else False
+                player_data['prize_position'] = None
         
         # Handle non-eligible players (show rank but no prize money)
         for player_data in non_eligible_tied:
@@ -717,8 +717,8 @@ def calculate_leaderboard(tournament_id):
         
         # Move to next unprocessed position
         current_rank += len(tied_players)
-        # Only advance prize rank counter for eligible players
-        if prize_eligible_tied:
+        # Only advance prize rank counter for eligible players with scores
+        if prize_eligible_tied and current_score is not None:
             current_prize_rank += len(prize_eligible_tied)
         i = j
     
