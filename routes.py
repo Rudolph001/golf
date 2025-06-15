@@ -544,16 +544,20 @@ def auto_award_daily_special_prizes(tournament_id, day):
     # Clear existing special prizes for this day
     SpecialPrize.query.filter_by(tournament_id=tournament_id, day=day).delete()
     
-    # Award new special prizes
+    # Award new special prizes with split amounts for ties
     for prize_type, player_ids in winners.items():
         if player_ids:  # Only award if there are actual winners
+            # Split the R10,000 prize equally among all winners
+            total_prize = 10000
+            split_amount = total_prize // len(player_ids)  # Integer division to avoid cents
+            
             for player_id in player_ids:
                 special_prize = SpecialPrize(
                     tournament_id=tournament_id,
                     day=day,
                     prize_type=prize_type,
                     player_id=player_id,
-                    amount=10000
+                    amount=split_amount
                 )
                 db.session.add(special_prize)
     
