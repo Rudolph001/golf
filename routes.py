@@ -1,6 +1,9 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db
 from models import Tournament, Player, Round, Score, SpecialPrize, HandicapPlayer, HandicapRound, ArccosPlayerData, ArccosRoundData, PINACLEPOINT_COURSE
+from arccos_integration import (sync_arccos_data_for_tournament, sync_player_arccos_data, 
+                               get_arccos_shot_analysis, get_multi_day_shot_data,
+                               auto_sync_all_tournament_data)
 from datetime import datetime, date
 from sqlalchemy import func
 
@@ -1018,17 +1021,13 @@ def sync_arccos_player(player_id):
         arccos_data.sync_status = 'syncing'
         arccos_data.last_sync = datetime.utcnow()
         
-        # Simulate data sync (in real implementation, this would call Arccos API)
-        import random
-        arccos_data.avg_drive_distance = random.randint(220, 280)
-        arccos_data.fairways_hit_percentage = random.randint(40, 80)
-        arccos_data.greens_in_regulation_percentage = random.randint(30, 70)
-        arccos_data.average_putts_per_hole = round(random.uniform(1.5, 2.5), 1)
-        arccos_data.strokes_gained_total = round(random.uniform(-3.0, 3.0), 1)
-        arccos_data.strokes_gained_driving = round(random.uniform(-1.0, 1.0), 1)
-        arccos_data.strokes_gained_approach = round(random.uniform(-1.0, 1.0), 1)
-        arccos_data.strokes_gained_short_game = round(random.uniform(-1.0, 1.0), 1)
-        arccos_data.strokes_gained_putting = round(random.uniform(-1.0, 1.0), 1)
+        # Sync data from Arccos API and populate scorecards
+        result = sync_player_arccos_data(arccos_data)
+        
+        if not result['success']:
+            arccos_data.sync_status = 'error'
+            db.session.commit()
+            return jsonify({'error': result['error']}), 400
         
         arccos_data.sync_status = 'connected'
         db.session.commit()
