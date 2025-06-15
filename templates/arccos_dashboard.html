@@ -255,14 +255,50 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Connect this player to their Arccos account.</p>
-                <input type="hidden" id="setup-player-id">
-                <button class="btn btn-success" onclick="syncPlayer(document.getElementById('setup-player-id').value)">
-                    <i class="fas fa-link me-2"></i>Connect and Sync
-                </button>
-                <button class="btn btn-danger" onclick="disconnectPlayer(document.getElementById('setup-player-id').value, document.getElementById('setup-player-name').textContent)">
-                    <i class="fas fa-unlink me-2"></i>Disconnect
-                </button>
+                <p class="mb-3">Connect this player to their Arccos account by entering their connection details:</p>
+                
+                <form id="arccos-setup-form" method="POST" action="{{ url_for('setup_arccos_player') }}">
+                    <input type="hidden" id="setup-player-id" name="player_id">
+                    
+                    <div class="mb-3">
+                        <label for="arccos-user-id" class="form-label">
+                            <i class="fas fa-user me-1"></i>Arccos User ID/Email
+                        </label>
+                        <input type="text" class="form-control" id="arccos-user-id" name="arccos_user_id" 
+                               placeholder="Enter Arccos account email or user ID" required>
+                        <div class="form-text">This is the email address used to register with Arccos</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="device-serial" class="form-label">
+                            <i class="fas fa-microchip me-1"></i>Link Pro Device Serial
+                        </label>
+                        <input type="text" class="form-control" id="device-serial" name="device_serial" 
+                               placeholder="Enter Link Pro device serial number">
+                        <div class="form-text">Found on the Link Pro device or in the Arccos app settings</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>How to find your details:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>User ID:</strong> Your Arccos account email address</li>
+                            <li><strong>Device Serial:</strong> Check your Link Pro device or Arccos mobile app under Settings > Devices</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-link me-2"></i>Connect to Arccos
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="syncPlayer(document.getElementById('setup-player-id').value)">
+                            <i class="fas fa-sync-alt me-2"></i>Sync Data Only
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="disconnectPlayer(document.getElementById('setup-player-id').value, document.getElementById('setup-player-name').textContent)">
+                            <i class="fas fa-unlink me-2"></i>Disconnect
+                        </button>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -501,6 +537,17 @@ function showErrorState() {
 function setupPlayer(playerId, playerName) {
     document.getElementById('setup-player-id').value = playerId;
     document.getElementById('setup-player-name').textContent = playerName;
+
+    // Check if player already has Arccos data and pre-populate fields
+    const arccosData = {{ arccos_players_data | tojson }};
+    if (arccosData[playerId]) {
+        document.getElementById('arccos-user-id').value = arccosData[playerId].arccos_user_id || '';
+        document.getElementById('device-serial').value = arccosData[playerId].device_serial || '';
+    } else {
+        // Clear fields for new setup
+        document.getElementById('arccos-user-id').value = '';
+        document.getElementById('device-serial').value = '';
+    }
 
     // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('arccosSetupModal'));
