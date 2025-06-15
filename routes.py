@@ -576,33 +576,37 @@ def calculate_daily_special_prizes(tournament_id, day):
     
     winners = {}
     
-    # 1. Most Pars Front 9 (holes 1-9) - count pars on front 9
+    # 1. Most Pars Front 9 (holes 1-9) - count actual pars based on course data
     front_nine_pars = defaultdict(int)
     for score in scores_with_data:
         par_count = 0
         for hole in range(1, 10):  # holes 1-9
             hole_score = score.get_hole_score(hole)
-            if hole_score == 4:  # assuming par 4 for simplicity, could be made more sophisticated
-                par_count += 1
+            if hole_score and hole < len(PINACLEPOINT_COURSE['holes']):
+                hole_par = PINACLEPOINT_COURSE['holes'][hole-1]['par']
+                if hole_score == hole_par:
+                    par_count += 1
         front_nine_pars[score.player_id] = par_count
     
-    if front_nine_pars:
+    if front_nine_pars and max(front_nine_pars.values()) > 0:
         max_front_pars = max(front_nine_pars.values())
         winners['most_pars_front'] = [pid for pid, count in front_nine_pars.items() if count == max_front_pars]
     else:
         winners['most_pars_front'] = []
     
-    # 2. Most Pars Back 9 (holes 10-18) - count pars on back 9
+    # 2. Most Pars Back 9 (holes 10-18) - count actual pars based on course data
     back_nine_pars = defaultdict(int)
     for score in scores_with_data:
         par_count = 0
         for hole in range(10, 19):  # holes 10-18
             hole_score = score.get_hole_score(hole)
-            if hole_score == 4:  # assuming par 4 for simplicity
-                par_count += 1
+            if hole_score and hole-1 < len(PINACLEPOINT_COURSE['holes']):
+                hole_par = PINACLEPOINT_COURSE['holes'][hole-1]['par']
+                if hole_score == hole_par:
+                    par_count += 1
         back_nine_pars[score.player_id] = par_count
     
-    if back_nine_pars:
+    if back_nine_pars and max(back_nine_pars.values()) > 0:
         max_back_pars = max(back_nine_pars.values())
         winners['most_pars_back'] = [pid for pid, count in back_nine_pars.items() if count == max_back_pars]
     else:
@@ -612,44 +616,54 @@ def calculate_daily_special_prizes(tournament_id, day):
     handicap_performance = []
     for score in scores_with_data:
         player = score.player
-        net_score = score.get_net_score()  # handicap-adjusted score
-        expected_score = 72 + player.handicap  # par + handicap
-        performance = expected_score - net_score  # positive means beat handicap
-        handicap_performance.append((score.player_id, performance))
+        if score.total_strokes and player.handicap is not None:
+            net_score = score.get_net_score()  # handicap-adjusted score
+            if net_score is not None:
+                expected_score = 72  # course par without handicap adjustment
+                performance = expected_score - net_score  # positive means beat expected net score
+                handicap_performance.append((score.player_id, performance))
     
-    if handicap_performance:
+    if handicap_performance and len(handicap_performance) > 0:
         best_performance = max(handicap_performance, key=lambda x: x[1])[1]
-        winners['beat_handicap'] = [pid for pid, perf in handicap_performance if perf == best_performance]
+        # Only award if someone actually beat their expected score
+        if best_performance > 0:
+            winners['beat_handicap'] = [pid for pid, perf in handicap_performance if perf == best_performance]
+        else:
+            winners['beat_handicap'] = []
     else:
         winners['beat_handicap'] = []
     
-    # 4. Most Birdies - count birdies (scores under par)
+    # 4. Most Birdies - count birdies (scores under par) based on actual hole pars
     birdie_count = defaultdict(int)
     for score in scores_with_data:
         birdies = 0
         for hole in range(1, 19):  # holes 1-18
             hole_score = score.get_hole_score(hole)
-            if hole_score and hole_score < 4:  # assuming par 4, birdie = 3 or better
-                birdies += 1
+            if hole_score and hole-1 < len(PINACLEPOINT_COURSE['holes']):
+                hole_par = PINACLEPOINT_COURSE['holes'][hole-1]['par']
+                if hole_score < hole_par:  # birdie or better
+                    birdies += 1
         birdie_count[score.player_id] = birdies
     
-    if birdie_count:
+    if birdie_count and max(birdie_count.values()) > 0:
         max_birdies = max(birdie_count.values())
         winners['most_birdies'] = [pid for pid, count in birdie_count.items() if count == max_birdies]
     else:
         winners['most_birdies'] = []
     
-    # 5. Most Pars Overall - player with most pars across all 18 holes
+    # 5. Most Pars Overall - player with most pars across all 18 holes using actual course pars
     total_pars = defaultdict(int)
     for score in scores_with_data:
         par_count = 0
         for hole in range(1, 19):  # holes 1-18
             hole_score = score.get_hole_score(hole)
-            if hole_score == 4:  # assuming par 4 for simplicity
-                par_count += 1
+            if hole_score and hole-1 < len(PINACLEPOINT_COURSE['holes']):
+                hole_par = PINACLEPOINT_COURSE['holes'][hole-1]['par']
+                if hole_score == hole_par:
+                    par_count += 1
         total_pars[score.player_id] = par_count
     
-    if total_pars:
+    if total_pars and max(total_pars.values()) > 0:
         max_total_pars = max(total_pars.values())
         winners['most_pars'] = [pid for pid, count in total_pars.items() if count == max_total_pars]
     else:
@@ -730,7 +744,7 @@ def calculate_leaderboard(tournament_id):
                 player_id=player.id
             ).all()
             for prize in manual_special_prizes:
-                special_prizes_total += 10000  # R10,000 per manual special prize
+                special_prizes_total += 30000  # R30,000 per manual special prize
                 special_prizes_detail.append(f"Day {prize.day} {prize.prize_type.replace('_', ' ').title()}")
         except Exception:
             # Handle case where day column doesn't exist yet
@@ -742,7 +756,7 @@ def calculate_leaderboard(tournament_id):
             for prize_type, winner_ids in daily_winners.items():
                 if player.id in winner_ids and len(winner_ids) > 0:
                     # Split prize money among tied winners
-                    prize_amount = 10000 // len(winner_ids)  # R10,000 split among winners
+                    prize_amount = 30000 // len(winner_ids)  # R30,000 split among winners
                     special_prizes_total += prize_amount
                     if len(winner_ids) > 1:
                         special_prizes_detail.append(f"Day {day} {prize_type.replace('_', ' ').title()} (Split {len(winner_ids)} ways)")
