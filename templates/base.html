@@ -15,62 +15,113 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-tournament mb-4">
-        <div class="container">
-            <a class="navbar-brand tournament-logo" href="{{ url_for('index') }}">
-                <i class="fas fa-trophy me-2 trophy-icon"></i>
-                Family Masters Invitational
+    <!-- Professional Tournament Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-tournament fixed-top">
+        <div class="container-fluid px-4">
+            <!-- Tournament Brand -->
+            <a class="navbar-brand tournament-logo d-flex align-items-center" href="{{ url_for('index') }}">
+                <div class="trophy-container me-3">
+                    <i class="fas fa-trophy trophy-icon"></i>
+                </div>
+                <div class="brand-text">
+                    <div class="tournament-name">{{ tournament.name if tournament else 'Family Masters Invitational' }}</div>
+                    <div class="tournament-tagline">Championship Golf Tournament</div>
+                </div>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fas fa-bars text-white"></i>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Tournament Home -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">
-                            <i class="fas fa-home me-1"></i>Tournament
+                        <a class="nav-link professional-nav-link" href="{{ url_for('index') }}">
+                            <div class="nav-icon-container">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <span class="nav-text">Tournament</span>
                         </a>
                     </li>
+
+                    <!-- Scoreboard -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('scoreboard') }}">
-                            <i class="fas fa-chart-line me-1"></i>Scoreboard
+                        <a class="nav-link professional-nav-link" href="{{ url_for('scoreboard') }}">
+                            <div class="nav-icon-container">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <span class="nav-text">Scoreboard</span>
                         </a>
                     </li>
+
+                    <!-- Daily Boards Dropdown -->
                     <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-clipboard-list me-1"></i>Daily Boards
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('day_scorecard_board', day=1) }}">Day 1 - Stroke Play</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('day_scorecard_board', day=2) }}">Day 2 - Stableford</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('day_scorecard_board', day=3) }}">Day 3 - Scramble</a></li>
-                            </ul>
-                        </li>
+                        <a class="nav-link dropdown-toggle professional-nav-link" href="#" id="dailyBoardsDropdown" role="button" data-bs-toggle="dropdown">
+                            <div class="nav-icon-container">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <span class="nav-text">Daily Boards</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{{ url_for('day_scorecard_board', day=1) }}">
+                                <i class="fas fa-calendar-alt me-2"></i>Day 1 Scorecard
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('day_scorecard_board', day=2) }}">
+                                <i class="fas fa-calendar-alt me-2"></i>Day 2 Scorecard
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('day_scorecard_board', day=3) }}">
+                                <i class="fas fa-calendar-alt me-2"></i>Day 3 Scorecard
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Prize Money -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('prize_money') }}">
-                            <i class="fas fa-money-bill-wave me-1"></i>Prize Money
+                        <a class="nav-link professional-nav-link" href="{{ url_for('prize_money') }}">
+                            <div class="nav-icon-container">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <span class="nav-text">Prize Money</span>
                         </a>
                     </li>
+
+                    <!-- Admin -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin') }}">
-                            <i class="fas fa-cog me-1"></i>Admin
+                        <a class="nav-link professional-nav-link" href="{{ url_for('admin') }}">
+                            <div class="nav-icon-container">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <span class="nav-text">Admin</span>
                         </a>
                     </li>
+
+                    <!-- Handicap Calculator -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('handicap_dashboard') }}">
-                            <i class="fas fa-calculator me-1"></i>Handicap Calculator
+                        <a class="nav-link professional-nav-link" href="{{ url_for('handicap_calculator') }}">
+                            <div class="nav-icon-container">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <span class="nav-text">Handicap Calculator</span>
                         </a>
                     </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('arccos_dashboard') }}">
-                                <i class="fas fa-satellite-dish me-1"></i>Arccos Analytics
-                            </a>
-                        </li>
+
+                    <!-- Arccos Analytics -->
+                    <li class="nav-item">
+                        <a class="nav-link professional-nav-link" href="{{ url_for('arccos_dashboard') }}">
+                            <div class="nav-icon-container">
+                                <i class="fas fa-satellite-dish"></i>
+                            </div>
+                            <span class="nav-text">Arccos Analytics</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Add padding to account for fixed navbar -->
+    <div style="padding-top: 90px;"></div>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}

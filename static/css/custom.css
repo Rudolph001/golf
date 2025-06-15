@@ -97,29 +97,209 @@
     box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
 }
 
-/* Professional tournament styling */
+/* Professional tournament navigation styling */
 .navbar-tournament {
-    background: linear-gradient(90deg, var(--tournament-dark-navy) 0%, var(--tournament-navy) 100%) !important;
-    border-bottom: 2px solid var(--tournament-gold);
-    box-shadow: 0 4px 12px var(--tournament-shadow);
+    background: linear-gradient(135deg, var(--tournament-dark-navy) 0%, var(--tournament-navy) 70%, var(--tournament-accent-blue) 100%) !important;
+    border-bottom: 3px solid var(--tournament-gold);
+    box-shadow: 0 8px 24px var(--tournament-shadow);
+    backdrop-filter: blur(10px);
+    padding: 0.75rem 0;
+    height: 90px;
 }
 
-.navbar-brand {
+/* Tournament Brand Styling */
+.tournament-logo {
+    color: var(--tournament-white) !important;
+    text-decoration: none;
+    padding: 0.5rem 0;
+}
+
+.tournament-logo:hover {
+    color: var(--tournament-gold) !important;
+    text-decoration: none;
+}
+
+.trophy-container {
+    background: radial-gradient(circle, var(--tournament-gold) 0%, #b8860b 100%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.trophy-icon {
+    font-size: 1.5rem;
+    color: var(--tournament-dark-navy);
+    text-shadow: none;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.tournament-name {
     font-family: 'Georgia', serif;
     font-weight: bold;
-    color: var(--tournament-white) !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    line-height: 1.2;
 }
 
-.nav-link {
+.tournament-tagline {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tournament-gold);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    letter-spacing: 0.3px;
+    margin-top: -2px;
+}
+
+/* Professional Navigation Links */
+.professional-nav-link {
     color: var(--tournament-cream) !important;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem !important;
+    border-radius: 8px;
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.professional-nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.3s ease;
+}
+
+.professional-nav-link:hover::before {
+    left: 100%;
+}
+
+.professional-nav-link:hover {
+    color: var(--tournament-gold) !important;
+    background: rgba(255,255,255,0.1);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.nav-icon-container {
+    background: rgba(255,255,255,0.1);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.professional-nav-link:hover .nav-icon-container {
+    background: var(--tournament-gold);
+    color: var(--tournament-dark-navy);
+    border-color: var(--tournament-gold);
+    transform: scale(1.1);
+}
+
+.nav-icon-container i {
+    font-size: 0.9rem;
     transition: all 0.3s ease;
 }
 
-.nav-link:hover {
-    color: var(--tournament-gold) !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+.nav-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1;
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu-dark {
+    background: var(--tournament-dark-navy);
+    border: 2px solid var(--tournament-gold);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    padding: 0.5rem 0;
+}
+
+.dropdown-menu-dark .dropdown-item {
+    color: var(--tournament-cream);
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-radius: 0;
+}
+
+.dropdown-menu-dark .dropdown-item:hover {
+    background: var(--tournament-accent-blue);
+    color: var(--tournament-white);
+    padding-left: 2rem;
+}
+
+/* Mobile responsiveness for navigation */
+@media (max-width: 991px) {
+    .navbar-tournament {
+        height: auto;
+        padding: 0.5rem 0;
+    }
+    
+    .tournament-name {
+        font-size: 1.1rem;
+    }
+    
+    .tournament-tagline {
+        font-size: 0.7rem;
+    }
+    
+    .trophy-container {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .trophy-icon {
+        font-size: 1.2rem;
+    }
+    
+    .professional-nav-link {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 0.5rem 1rem !important;
+        margin: 0.25rem 0;
+    }
+    
+    .nav-icon-container {
+        margin-bottom: 0;
+        margin-right: 0.75rem;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .nav-text {
+        font-size: 0.9rem;
+    }
 }
 
 .text-golf-green {

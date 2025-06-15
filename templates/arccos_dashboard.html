@@ -741,6 +741,31 @@ setInterval(() => {
     updateLeaderboardArccosData();
 }, 300000); // 5 minutes
 
+function updateLeaderboardArccosData() {
+    // Update leaderboard with latest Arccos data for all players
+    const playerCards = document.querySelectorAll('.player-card');
+    
+    playerCards.forEach(card => {
+        const playerId = card.dataset.playerId;
+        const statusElement = document.getElementById(`status-${playerId}`);
+        
+        // Only update connected players
+        if (statusElement && statusElement.textContent.includes('Connected')) {
+            // Simulate fetching latest data and updating leaderboard
+            fetch(`/get_arccos_data/${playerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updatePlayerLeaderboardData(playerId, data.data);
+                    }
+                })
+                .catch(error => {
+                    console.log(`Could not update data for player ${playerId}`);
+                });
+        }
+    });
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Load initial leaderboard data
