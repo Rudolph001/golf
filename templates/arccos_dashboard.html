@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Arccos Analytics Dashboard - Pinaclepoint Golf{% endblock %}
@@ -42,6 +41,11 @@
                                         </span>
                                     </div>
                                     <small class="text-muted">Last Sync: <span id="sync-{{ player.id }}">2 min ago</span></small>
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="setupPlayer('{{ player.id }}', '{{ player.name }}')">
+                                            <i class="fas fa-cog"></i>Setup
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -242,8 +246,34 @@
     </div>
 </div>
 
+<!-- Arccos Setup Modal -->
+<div class="modal fade" id="arccosSetupModal" tabindex="-1" aria-labelledby="arccosSetupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="arccosSetupModalLabel">Arccos Setup for <span id="setup-player-name"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Connect this player to their Arccos account.</p>
+                <input type="hidden" id="setup-player-id">
+                <button class="btn btn-success" onclick="syncPlayer(document.getElementById('setup-player-id').value)">
+                    <i class="fas fa-link me-2"></i>Connect and Sync
+                </button>
+                <button class="btn btn-danger" onclick="disconnectPlayer(document.getElementById('setup-player-id').value, document.getElementById('setup-player-name').textContent)">
+                    <i class="fas fa-unlink me-2"></i>Disconnect
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- JavaScript for Arccos Integration -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // Simulated Arccos API Integration
 class ArccosAPI {
@@ -317,15 +347,15 @@ document.querySelectorAll('.player-card').forEach(card => {
     card.addEventListener('click', async function() {
         const playerId = this.dataset.playerId;
         const playerName = this.querySelector('.card-title').textContent;
-        
+
         // Update UI
         document.querySelectorAll('.player-card').forEach(c => c.classList.remove('border-primary', 'bg-light'));
         this.classList.add('border-primary', 'bg-light');
-        
+
         // Show analytics section
         document.getElementById('player-analytics').style.display = 'block';
         document.getElementById('selected-player-name').textContent = playerName + ' - Arccos Analytics';
-        
+
         // Load player data
         await loadPlayerAnalytics(playerId);
     });
@@ -335,25 +365,25 @@ async function loadPlayerAnalytics(playerId) {
     try {
         // Show loading state
         showLoadingState();
-        
+
         // Fetch data from Arccos API
         const [roundData, clubData] = await Promise.all([
             arccosAPI.getPlayerRoundData(playerId),
             arccosAPI.getClubPerformance(playerId)
         ]);
-        
+
         // Update overview cards
         updateOverviewCards(roundData);
-        
+
         // Update charts
         updateClubDistanceChart(clubData);
         updateAccuracyHeatmap(roundData);
-        
+
         // Update shot analysis table
         updateShotAnalysisTable(roundData.holeData);
-        
+
         arccosAPI.currentPlayer = playerId;
-        
+
     } catch (error) {
         console.error('Error loading Arccos data:', error);
         showErrorState();
@@ -369,11 +399,11 @@ function updateOverviewCards(data) {
 
 function updateClubDistanceChart(clubData) {
     const ctx = document.getElementById('club-distance-chart').getContext('2d');
-    
+
     if (arccosAPI.charts.clubDistance) {
         arccosAPI.charts.clubDistance.destroy();
     }
-    
+
     arccosAPI.charts.clubDistance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -400,11 +430,11 @@ function updateClubDistanceChart(clubData) {
 
 function updateAccuracyHeatmap(data) {
     const ctx = document.getElementById('accuracy-heatmap').getContext('2d');
-    
+
     if (arccosAPI.charts.accuracy) {
         arccosAPI.charts.accuracy.destroy();
     }
-    
+
     // Create a simple accuracy visualization
     const accuracyData = [
         { x: 'Drives', y: 'Accuracy', v: (data.fairwaysHit / data.fairwayAttempts) * 100 },
@@ -412,7 +442,7 @@ function updateAccuracyHeatmap(data) {
         { x: 'Short Game', y: 'Accuracy', v: Math.random() * 30 + 60 },
         { x: 'Putting', y: 'Accuracy', v: Math.random() * 20 + 70 }
     ];
-    
+
     arccosAPI.charts.accuracy = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -437,7 +467,7 @@ function updateAccuracyHeatmap(data) {
 function updateShotAnalysisTable(holeData) {
     const tbody = document.getElementById('shot-analysis-table');
     tbody.innerHTML = '';
-    
+
     holeData.forEach(hole => {
         const row = tbody.insertRow();
         row.innerHTML = `
@@ -468,59 +498,106 @@ function showErrorState() {
     document.getElementById('average-putts').innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i>';
 }
 
-// Control functions
-async function syncAllPlayers() {
+function setupPlayer(playerId, playerName) {
+    document.getElementById('setup-player-id').value = playerId;
+    document.getElementById('setup-player-name').textContent = playerName;
+
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('arccosSetupModal'));
+    modal.show();
+}
+
+async function syncPlayer(playerId) {
+    const statusElement = document.getElementById(`status-${playerId}`);
+    const syncElement = document.getElementById(`sync-${playerId}`);
+
+    // Update UI to show syncing
+    statusElement.className = 'badge bg-warning';
+    statusElement.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Syncing...';
+
+    try {
+        const response = await fetch(`/sync_arccos_player/${playerId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            statusElement.className = 'badge bg-success';
+            statusElement.innerHTML = '<i class="fas fa-wifi me-1"></i>Connected';
+            syncElement.textContent = data.last_sync;
+
+            // Update leaderboard data if visible
+            updatePlayerLeaderboardData(playerId, data.data);
+        } else {
+            statusElement.className = 'badge bg-danger';
+            statusElement.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
+        }
+    } catch (error) {
+        statusElement.className = 'badge bg-danger';
+        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
+    }
+}
+
+async function disconnectPlayer(playerId, playerName) {
+    if (confirm(`Are you sure you want to disconnect ${playerName} from Arccos?`)) {
+        try {
+            const response = await fetch(`/disconnect_arccos_player/${playerId}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                // Reload the page to reflect changes
+                window.location.reload();
+            }
+        } catch (error) {
+            alert('Error disconnecting player. Please try again.');
+        }
+    }
+}
+
+function syncAllPlayers() {
     const button = event.target;
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Syncing...';
     button.disabled = true;
-    
-    try {
-        // Simulate sync process
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Update sync timestamps
-        document.querySelectorAll('[id^="sync-"]').forEach(element => {
-            element.textContent = 'Just now';
-        });
-        
-        // Update leaderboard with fresh Arccos data
-        await updateLeaderboardArccosData();
-        
-    } finally {
+
+    // Get all connected players and sync them
+    const playerCards = document.querySelectorAll('.player-card');
+    const syncPromises = [];
+
+    playerCards.forEach(card => {
+        const playerId = card.dataset.playerId;
+        const statusElement = document.getElementById(`status-${playerId}`);
+
+        // Only sync connected players
+        if (statusElement && statusElement.textContent.includes('Connected')) {
+            syncPromises.push(syncPlayer(playerId));
+        }
+    });
+
+    Promise.all(syncPromises).finally(() => {
         button.innerHTML = originalText;
         button.disabled = false;
-    }
+    });
 }
 
-async function updateLeaderboardArccosData() {
-    const arccosDataCells = document.querySelectorAll('.arccos-data');
-    
-    for (const cell of arccosDataCells) {
-        const playerId = cell.dataset.player;
-        const metric = cell.dataset.metric;
-        
-        // Simulate fetching data
-        const data = await arccosAPI.getPlayerRoundData(playerId);
-        
-        switch (metric) {
-            case 'avg-drive':
-                cell.textContent = data.avgDriveDistance + ' yds';
-                break;
-            case 'fairway-hit':
-                cell.textContent = Math.round((data.fairwaysHit / data.fairwayAttempts) * 100) + '%';
-                break;
-            case 'gir':
-                cell.textContent = Math.round((data.greensInRegulation / 18) * 100) + '%';
-                break;
-            case 'avg-putts':
-                cell.textContent = (data.totalPutts / 18).toFixed(1);
-                break;
-            case 'strokes-gained':
-                cell.textContent = data.strokesGained;
-                break;
-        }
-    }
+function updatePlayerLeaderboardData(playerId, data) {
+    // Update leaderboard table with new Arccos data
+    const avgDriveCell = document.querySelector(`[data-player="${playerId}"][data-metric="avg-drive"]`);
+    const fairwayCell = document.querySelector(`[data-player="${playerId}"][data-metric="fairway-hit"]`);
+    const girCell = document.querySelector(`[data-player="${playerId}"][data-metric="gir"]`);
+    const puttsCell = document.querySelector(`[data-player="${playerId}"][data-metric="avg-putts"]`);
+    const strokesGainedCell = document.querySelector(`[data-player="${playerId}"][data-metric="strokes-gained"]`);
+
+    if (avgDriveCell) avgDriveCell.textContent = data.avg_drive_distance + ' yds';
+    if (fairwayCell) fairwayCell.textContent = data.fairways_hit_percentage + '%';
+    if (girCell) girCell.textContent = data.greens_in_regulation_percentage + '%';
+    if (puttsCell) puttsCell.textContent = data.average_putts_per_hole;
+    if (strokesGainedCell) strokesGainedCell.textContent = data.strokes_gained_total;
 }
 
 function exportArccosData() {

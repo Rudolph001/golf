@@ -930,10 +930,152 @@ def arccos_dashboard():
     tournament_players = Player.query.filter_by(tournament_id=tournament.id).all()
     leaderboard = calculate_leaderboard(tournament.id)
     
+    # Get Arccos data for each player
+    arccos_players_data = {}
+    for player in tournament_players:
+        arccos_data = ArccosPlayerData.query.filter_by(
+            player_id=player.id, 
+            tournament_id=tournament.id
+        ).first()
+        arccos_players_data[player.id] = arccos_data
+    
     return render_template('arccos_dashboard.html',
                          tournament=tournament,
                          tournament_players=tournament_players,
-                         leaderboard=leaderboard)
+                         leaderboard=leaderboard,
+                         arccos_players_data=arccos_players_data)
+
+@app.route('/setup_arccos_player', methods=['POST'])
+def setup_arccos_player():
+    """Setup Arccos connection for a specific player"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash('No tournament found.', 'error')
+        return redirect(url_for('arccos_dashboard'))
+    
+    player_id = request.form.get('player_id')
+    arccos_user_id = request.form.get('arccos_user_id')
+    device_serial = request.form.get('device_serial')
+    
+    if not player_id:
+        flash('Please select a player.', 'error')
+        return redirect(url_for('arccos_dashboard'))
+    
+    try:
+        player = Player.query.get_or_404(player_id)
+        
+        # Check if Arccos data already exists for this player
+        arccos_data = ArccosPlayerData.query.filter_by(
+            player_id=player_id, 
+            tournament_id=tournament.id
+        ).first()
+        
+        if arccos_data:
+            # Update existing data
+            arccos_data.arccos_user_id = arccos_user_id
+            arccos_data.device_serial = device_serial
+            arccos_data.last_sync = datetime.utcnow()
+            arccos_data.sync_status = 'connected'
+            flash(f'Updated Arccos connection for {player.name}.', 'success')
+        else:
+            # Create new Arccos data entry
+            arccos_data = ArccosPlayerData(
+                player_id=player_id,
+                tournament_id=tournament.id,
+                arccos_user_id=arccos_user_id,
+                device_serial=device_serial,
+                sync_status='connected'
+            )
+            db.session.add(arccos_data)
+            flash(f'Connected {player.name} to Arccos system.', 'success')
+        
+        db.session.commit()
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error setting up Arccos connection. Please try again.', 'error')
+    
+    return redirect(url_for('arccos_dashboard'))
+
+@app.route('/sync_arccos_player/<int:player_id>', methods=['POST'])
+def sync_arccos_player(player_id):
+    """Sync Arccos data for a specific player"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return jsonify({'error': 'No tournament found'}), 400
+    
+    try:
+        player = Player.query.get_or_404(player_id)
+        arccos_data = ArccosPlayerData.query.filter_by(
+            player_id=player_id, 
+            tournament_id=tournament.id
+        ).first()
+        
+        if not arccos_data:
+            return jsonify({'error': 'Player not connected to Arccos'}), 400
+        
+        # Update sync status
+        arccos_data.sync_status = 'syncing'
+        arccos_data.last_sync = datetime.utcnow()
+        
+        # Simulate data sync (in real implementation, this would call Arccos API)
+        import random
+        arccos_data.avg_drive_distance = random.randint(220, 280)
+        arccos_data.fairways_hit_percentage = random.randint(40, 80)
+        arccos_data.greens_in_regulation_percentage = random.randint(30, 70)
+        arccos_data.average_putts_per_hole = round(random.uniform(1.5, 2.5), 1)
+        arccos_data.strokes_gained_total = round(random.uniform(-3.0, 3.0), 1)
+        arccos_data.strokes_gained_driving = round(random.uniform(-1.0, 1.0), 1)
+        arccos_data.strokes_gained_approach = round(random.uniform(-1.0, 1.0), 1)
+        arccos_data.strokes_gained_short_game = round(random.uniform(-1.0, 1.0), 1)
+        arccos_data.strokes_gained_putting = round(random.uniform(-1.0, 1.0), 1)
+        
+        arccos_data.sync_status = 'connected'
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'player_name': player.name,
+            'last_sync': arccos_data.last_sync.strftime('%H:%M'),
+            'data': {
+                'avg_drive_distance': arccos_data.avg_drive_distance,
+                'fairways_hit_percentage': arccos_data.fairways_hit_percentage,
+                'greens_in_regulation_percentage': arccos_data.greens_in_regulation_percentage,
+                'average_putts_per_hole': arccos_data.average_putts_per_hole,
+                'strokes_gained_total': arccos_data.strokes_gained_total
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': 'Sync failed'}), 500
+
+@app.route('/disconnect_arccos_player/<int:player_id>', methods=['POST'])
+def disconnect_arccos_player(player_id):
+    """Disconnect Arccos for a specific player"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash('No tournament found.', 'error')
+        return redirect(url_for('arccos_dashboard'))
+    
+    try:
+        player = Player.query.get_or_404(player_id)
+        arccos_data = ArccosPlayerData.query.filter_by(
+            player_id=player_id, 
+            tournament_id=tournament.id
+        ).first()
+        
+        if arccos_data:
+            db.session.delete(arccos_data)
+            db.session.commit()
+            flash(f'Disconnected {player.name} from Arccos system.', 'warning')
+        else:
+            flash(f'{player.name} was not connected to Arccos.', 'info')
+            
+    except Exception as e:
+        db.session.rollback()
+        flash('Error disconnecting Arccos. Please try again.', 'error')
+    
+    return redirect(url_for('arccos_dashboard'))
 
 @app.route('/handicap_dashboard')
 def handicap_dashboard():
