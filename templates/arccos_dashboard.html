@@ -1,0 +1,552 @@
+
+{% extends "base.html" %}
+
+{% block title %}Arccos Analytics Dashboard - Pinaclepoint Golf{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Arccos Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient" style="background: linear-gradient(135deg, #1a2332 0%, #2c5282 100%);">
+                <div class="card-body text-center">
+                    <h1 class="card-title text-white mb-3">
+                        <i class="fas fa-satellite-dish me-2"></i>
+                        Arccos Smart Analytics Dashboard
+                    </h1>
+                    <p class="card-text text-white-50 mb-0">
+                        Real-time golf performance data from Arccos Smart Sensors Gen 4
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Selection and Sync Status -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Player Analytics Selection</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for player in tournament_players %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-primary player-card" data-player-id="{{ player.id }}" style="cursor: pointer;">
+                                <div class="card-body text-center p-3">
+                                    <h6 class="card-title mb-2">{{ player.name }}</h6>
+                                    <div class="arccos-status mb-2">
+                                        <span class="badge bg-success" id="status-{{ player.id }}">
+                                            <i class="fas fa-wifi me-1"></i>Connected
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">Last Sync: <span id="sync-{{ player.id }}">2 min ago</span></small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sync Controls</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary btn-block mb-2" onclick="syncAllPlayers()">
+                        <i class="fas fa-sync-alt me-2"></i>Sync All Players
+                    </button>
+                    <button class="btn btn-outline-info btn-block" onclick="exportArccosData()">
+                        <i class="fas fa-download me-2"></i>Export Analytics
+                    </button>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Data syncs automatically every 5 minutes during active rounds
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Player Analytics -->
+    <div class="row mb-4" id="player-analytics" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="selected-player-name">Player Analytics</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshPlayerData()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Performance Overview Cards -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-golf-ball fa-2x mb-2"></i>
+                                    <h3 class="card-title" id="total-shots">0</h3>
+                                    <p class="card-text">Total Shots Today</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-bullseye fa-2x mb-2"></i>
+                                    <h3 class="card-title" id="fairways-hit">0%</h3>
+                                    <p class="card-text">Fairways Hit</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-flag fa-2x mb-2"></i>
+                                    <h3 class="card-title" id="greens-regulation">0%</h3>
+                                    <p class="card-text">Greens in Regulation</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-walking fa-2x mb-2"></i>
+                                    <h3 class="card-title" id="average-putts">0.0</h3>
+                                    <p class="card-text">Avg Putts per Hole</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shot Analytics Charts -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Club Performance (Distance)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="club-distance-chart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Shot Accuracy Heatmap</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="accuracy-heatmap" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Shot Data Table -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Hole-by-Hole Shot Analysis</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Hole</th>
+                                                    <th>Par</th>
+                                                    <th>Score</th>
+                                                    <th>Shots</th>
+                                                    <th>Drive (yds)</th>
+                                                    <th>Approach</th>
+                                                    <th>Putts</th>
+                                                    <th>FW Hit</th>
+                                                    <th>GIR</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="shot-analysis-table">
+                                                <!-- Dynamic content will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Leaderboard with Arccos Insights -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Tournament Performance with Arccos Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Player</th>
+                                    <th>Score</th>
+                                    <th>Avg Drive (yds)</th>
+                                    <th>FW Hit %</th>
+                                    <th>GIR %</th>
+                                    <th>Avg Putts</th>
+                                    <th>Strokes Gained</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player_data in leaderboard %}
+                                <tr>
+                                    <td>{{ player_data.rank }}</td>
+                                    <td>
+                                        <strong>{{ player_data.player.name }}</strong>
+                                        {% if not player_data.player.prize_eligible %}
+                                        <span class="badge bg-secondary ms-1">NE</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if player_data.par_score %}
+                                        <span class="badge bg-primary">{{ player_data.par_score }}</span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="arccos-data" data-metric="avg-drive" data-player="{{ player_data.player.id }}">-</td>
+                                    <td class="arccos-data" data-metric="fairway-hit" data-player="{{ player_data.player.id }}">-</td>
+                                    <td class="arccos-data" data-metric="gir" data-player="{{ player_data.player.id }}">-</td>
+                                    <td class="arccos-data" data-metric="avg-putts" data-player="{{ player_data.player.id }}">-</td>
+                                    <td class="arccos-data" data-metric="strokes-gained" data-player="{{ player_data.player.id }}">-</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Arccos Integration -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Simulated Arccos API Integration
+class ArccosAPI {
+    constructor() {
+        this.baseURL = 'https://api.arccosgolf.com/v2/';
+        this.currentPlayer = null;
+        this.charts = {};
+    }
+
+    // Simulate API calls to Arccos
+    async getPlayerRoundData(playerId) {
+        // In real implementation, this would make actual API calls to Arccos
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    roundId: 'round_' + playerId + '_' + Date.now(),
+                    totalShots: Math.floor(Math.random() * 20) + 70,
+                    fairwaysHit: Math.floor(Math.random() * 14) + 1,
+                    fairwayAttempts: 14,
+                    greensInRegulation: Math.floor(Math.random() * 10) + 4,
+                    totalPutts: Math.floor(Math.random() * 10) + 28,
+                    avgDriveDistance: Math.floor(Math.random() * 50) + 220,
+                    strokesGained: (Math.random() * 6 - 3).toFixed(1),
+                    holeData: this.generateHoleData()
+                });
+            }, 500);
+        });
+    }
+
+    generateHoleData() {
+        const holes = [];
+        for (let i = 1; i <= 18; i++) {
+            const par = [4, 4, 4, 4, 5, 4, 3, 4, 3, 4, 4, 4, 3, 4, 4, 5, 3, 5][i-1];
+            holes.push({
+                hole: i,
+                par: par,
+                score: par + Math.floor(Math.random() * 3) - 1,
+                shots: par + Math.floor(Math.random() * 3) - 1,
+                driveDistance: Math.floor(Math.random() * 80) + 200,
+                approach: ['Short', 'Long', 'Pin High', 'Off Green'][Math.floor(Math.random() * 4)],
+                putts: Math.floor(Math.random() * 3) + 1,
+                fairwayHit: Math.random() > 0.3,
+                greenInRegulation: Math.random() > 0.4
+            });
+        }
+        return holes;
+    }
+
+    async getClubPerformance(playerId) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    driver: { avgDistance: 250, accuracy: 65 },
+                    '3-wood': { avgDistance: 220, accuracy: 72 },
+                    '5-iron': { avgDistance: 170, accuracy: 80 },
+                    '7-iron': { avgDistance: 145, accuracy: 85 },
+                    '9-iron': { avgDistance: 125, accuracy: 90 },
+                    'pitching-wedge': { avgDistance: 105, accuracy: 88 },
+                    'sand-wedge': { avgDistance: 85, accuracy: 85 },
+                    'putter': { avgDistance: 0, accuracy: 75 }
+                });
+            }, 300);
+        });
+    }
+}
+
+const arccosAPI = new ArccosAPI();
+
+// Player selection handling
+document.querySelectorAll('.player-card').forEach(card => {
+    card.addEventListener('click', async function() {
+        const playerId = this.dataset.playerId;
+        const playerName = this.querySelector('.card-title').textContent;
+        
+        // Update UI
+        document.querySelectorAll('.player-card').forEach(c => c.classList.remove('border-primary', 'bg-light'));
+        this.classList.add('border-primary', 'bg-light');
+        
+        // Show analytics section
+        document.getElementById('player-analytics').style.display = 'block';
+        document.getElementById('selected-player-name').textContent = playerName + ' - Arccos Analytics';
+        
+        // Load player data
+        await loadPlayerAnalytics(playerId);
+    });
+});
+
+async function loadPlayerAnalytics(playerId) {
+    try {
+        // Show loading state
+        showLoadingState();
+        
+        // Fetch data from Arccos API
+        const [roundData, clubData] = await Promise.all([
+            arccosAPI.getPlayerRoundData(playerId),
+            arccosAPI.getClubPerformance(playerId)
+        ]);
+        
+        // Update overview cards
+        updateOverviewCards(roundData);
+        
+        // Update charts
+        updateClubDistanceChart(clubData);
+        updateAccuracyHeatmap(roundData);
+        
+        // Update shot analysis table
+        updateShotAnalysisTable(roundData.holeData);
+        
+        arccosAPI.currentPlayer = playerId;
+        
+    } catch (error) {
+        console.error('Error loading Arccos data:', error);
+        showErrorState();
+    }
+}
+
+function updateOverviewCards(data) {
+    document.getElementById('total-shots').textContent = data.totalShots;
+    document.getElementById('fairways-hit').textContent = Math.round((data.fairwaysHit / data.fairwayAttempts) * 100) + '%';
+    document.getElementById('greens-regulation').textContent = Math.round((data.greensInRegulation / 18) * 100) + '%';
+    document.getElementById('average-putts').textContent = (data.totalPutts / 18).toFixed(1);
+}
+
+function updateClubDistanceChart(clubData) {
+    const ctx = document.getElementById('club-distance-chart').getContext('2d');
+    
+    if (arccosAPI.charts.clubDistance) {
+        arccosAPI.charts.clubDistance.destroy();
+    }
+    
+    arccosAPI.charts.clubDistance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(clubData),
+            datasets: [{
+                label: 'Average Distance (yards)',
+                data: Object.values(clubData).map(club => club.avgDistance),
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function updateAccuracyHeatmap(data) {
+    const ctx = document.getElementById('accuracy-heatmap').getContext('2d');
+    
+    if (arccosAPI.charts.accuracy) {
+        arccosAPI.charts.accuracy.destroy();
+    }
+    
+    // Create a simple accuracy visualization
+    const accuracyData = [
+        { x: 'Drives', y: 'Accuracy', v: (data.fairwaysHit / data.fairwayAttempts) * 100 },
+        { x: 'Approaches', y: 'Accuracy', v: (data.greensInRegulation / 18) * 100 },
+        { x: 'Short Game', y: 'Accuracy', v: Math.random() * 30 + 60 },
+        { x: 'Putting', y: 'Accuracy', v: Math.random() * 20 + 70 }
+    ];
+    
+    arccosAPI.charts.accuracy = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: accuracyData.map(item => item.x),
+            datasets: [{
+                data: accuracyData.map(item => item.v),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function updateShotAnalysisTable(holeData) {
+    const tbody = document.getElementById('shot-analysis-table');
+    tbody.innerHTML = '';
+    
+    holeData.forEach(hole => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${hole.hole}</td>
+            <td>${hole.par}</td>
+            <td>${hole.score}</td>
+            <td>${hole.shots}</td>
+            <td>${hole.driveDistance}</td>
+            <td>${hole.approach}</td>
+            <td>${hole.putts}</td>
+            <td><span class="badge ${hole.fairwayHit ? 'bg-success' : 'bg-danger'}">${hole.fairwayHit ? 'Yes' : 'No'}</span></td>
+            <td><span class="badge ${hole.greenInRegulation ? 'bg-success' : 'bg-danger'}">${hole.greenInRegulation ? 'Yes' : 'No'}</span></td>
+        `;
+    });
+}
+
+function showLoadingState() {
+    document.getElementById('total-shots').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    document.getElementById('fairways-hit').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    document.getElementById('greens-regulation').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    document.getElementById('average-putts').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+}
+
+function showErrorState() {
+    document.getElementById('total-shots').innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+    document.getElementById('fairways-hit').innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+    document.getElementById('greens-regulation').innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+    document.getElementById('average-putts').innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+}
+
+// Control functions
+async function syncAllPlayers() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Syncing...';
+    button.disabled = true;
+    
+    try {
+        // Simulate sync process
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Update sync timestamps
+        document.querySelectorAll('[id^="sync-"]').forEach(element => {
+            element.textContent = 'Just now';
+        });
+        
+        // Update leaderboard with fresh Arccos data
+        await updateLeaderboardArccosData();
+        
+    } finally {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+async function updateLeaderboardArccosData() {
+    const arccosDataCells = document.querySelectorAll('.arccos-data');
+    
+    for (const cell of arccosDataCells) {
+        const playerId = cell.dataset.player;
+        const metric = cell.dataset.metric;
+        
+        // Simulate fetching data
+        const data = await arccosAPI.getPlayerRoundData(playerId);
+        
+        switch (metric) {
+            case 'avg-drive':
+                cell.textContent = data.avgDriveDistance + ' yds';
+                break;
+            case 'fairway-hit':
+                cell.textContent = Math.round((data.fairwaysHit / data.fairwayAttempts) * 100) + '%';
+                break;
+            case 'gir':
+                cell.textContent = Math.round((data.greensInRegulation / 18) * 100) + '%';
+                break;
+            case 'avg-putts':
+                cell.textContent = (data.totalPutts / 18).toFixed(1);
+                break;
+            case 'strokes-gained':
+                cell.textContent = data.strokesGained;
+                break;
+        }
+    }
+}
+
+function exportArccosData() {
+    // Implementation for exporting Arccos analytics data
+    alert('Arccos analytics data export feature - would integrate with Arccos API to export comprehensive shot and performance data.');
+}
+
+function refreshPlayerData() {
+    if (arccosAPI.currentPlayer) {
+        loadPlayerAnalytics(arccosAPI.currentPlayer);
+    }
+}
+
+// Auto-refresh every 5 minutes during active play
+setInterval(() => {
+    if (arccosAPI.currentPlayer) {
+        loadPlayerAnalytics(arccosAPI.currentPlayer);
+    }
+    updateLeaderboardArccosData();
+}, 300000); // 5 minutes
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load initial leaderboard data
+    updateLeaderboardArccosData();
+});
+</script>
+
+{% endblock %}

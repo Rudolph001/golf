@@ -246,3 +246,58 @@ PINACLEPOINT_COURSE = {
         {'number': 18, 'par': 5, 'yards': 495, 'meters': 453, 'handicap': 7},
     ]
 }
+class ArccosPlayerData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournament.id'), nullable=False)
+    arccos_user_id = db.Column(db.String(100), nullable=True)  # Arccos API user ID
+    device_serial = db.Column(db.String(100), nullable=True)   # Link Pro device serial
+    last_sync = db.Column(db.DateTime, default=datetime.utcnow)
+    sync_status = db.Column(db.String(20), default='connected')  # connected, syncing, error
+    
+    # Performance metrics from latest round
+    avg_drive_distance = db.Column(db.Float, nullable=True)
+    fairways_hit_percentage = db.Column(db.Float, nullable=True)
+    greens_in_regulation_percentage = db.Column(db.Float, nullable=True)
+    average_putts_per_hole = db.Column(db.Float, nullable=True)
+    strokes_gained_total = db.Column(db.Float, nullable=True)
+    strokes_gained_driving = db.Column(db.Float, nullable=True)
+    strokes_gained_approach = db.Column(db.Float, nullable=True)
+    strokes_gained_short_game = db.Column(db.Float, nullable=True)
+    strokes_gained_putting = db.Column(db.Float, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    player = db.relationship('Player', backref='arccos_data')
+    tournament = db.relationship('Tournament', backref='arccos_players')
+
+class ArccosRoundData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    round_id = db.Column(db.Integer, db.ForeignKey('round.id'), nullable=False)
+    arccos_round_id = db.Column(db.String(100), nullable=True)  # Arccos API round ID
+    
+    # Round-level analytics
+    total_shots = db.Column(db.Integer, nullable=True)
+    total_putts = db.Column(db.Integer, nullable=True)
+    fairways_hit = db.Column(db.Integer, nullable=True)
+    fairway_attempts = db.Column(db.Integer, nullable=True)
+    greens_in_regulation = db.Column(db.Integer, nullable=True)
+    scrambling_saves = db.Column(db.Integer, nullable=True)
+    scrambling_attempts = db.Column(db.Integer, nullable=True)
+    
+    # Distance tracking
+    longest_drive = db.Column(db.Float, nullable=True)
+    avg_drive_distance = db.Column(db.Float, nullable=True)
+    total_walking_distance = db.Column(db.Float, nullable=True)  # From Link Pro GPS
+    
+    # JSON field for detailed hole-by-hole shot data
+    shot_data = db.Column(db.Text, nullable=True)  # JSON string with detailed shot information
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    player = db.relationship('Player', backref='arccos_rounds')
+    round = db.relationship('Round', backref='arccos_data')

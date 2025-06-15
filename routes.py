@@ -920,6 +920,21 @@ def calculate_leaderboard(tournament_id):
     
     return leaderboard
 
+@app.route('/arccos_dashboard')
+def arccos_dashboard():
+    """Arccos Smart Sensors analytics dashboard"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    tournament_players = Player.query.filter_by(tournament_id=tournament.id).all()
+    leaderboard = calculate_leaderboard(tournament.id)
+    
+    return render_template('arccos_dashboard.html',
+                         tournament=tournament,
+                         tournament_players=tournament_players,
+                         leaderboard=leaderboard)
+
 @app.route('/handicap_dashboard')
 def handicap_dashboard():
     """Handicap calculation dashboard"""
