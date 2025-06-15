@@ -1008,6 +1008,73 @@ def save_handicap_round():
     
     return redirect(url_for('handicap_dashboard'))
 
+@app.route('/delete_handicap_player', methods=['POST'])
+def delete_handicap_player():
+    """Delete a handicap player and all their rounds"""
+    player_id = request.form.get('player_id')
+    
+    if not player_id:
+        flash('Please select a player to delete.', 'error')
+        return redirect(url_for('handicap_dashboard'))
+    
+    try:
+        player = HandicapPlayer.query.get_or_404(player_id)
+        player_name = player.name
+        
+        # Delete all handicap rounds for this player (cascade should handle this, but being explicit)
+        HandicapRound.query.filter_by(player_id=player_id).delete()
+        
+        # Delete the player
+        db.session.delete(player)
+        db.session.commit()
+        
+        flash(f'Player "{player_name}" and all their rounds have been deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting player. Please try again.', 'error')
+    
+    return redirect(url_for('handicap_dashboard'))
+
+@app.route('/delete_handicap_round', methods=['POST'])
+def delete_handicap_round():
+    """Delete a specific handicap round"""
+    player_id = request.form.get('player_id')
+    round_number = request.form.get('round_number')
+    
+    if not player_id or not round_number:
+        flash('Invalid request. Please try again.', 'error')
+        return redirect(url_for('handicap_dashboard'))
+    
+    try:
+        # Find and delete the specific round
+        handicap_round = HandicapRound.query.filter_by(
+            player_id=player_id, 
+            round_number=round_number
+        ).first()
+        
+        if not handicap_round:
+            flash('Round not found.', 'error')
+            return redirect(url_for('handicap_dashboard'))
+        
+        player = HandicapPlayer.query.get(player_id)
+        db.session.delete(handicap_round)
+        
+        # Recalculate player's handicap after round deletion
+        new_handicap = calculate_handicap_for_player(player_id)
+        if new_handicap is not None:
+            player.calculated_handicap = new_handicap
+        else:
+            player.calculated_handicap = None
+        
+        db.session.commit()
+        
+        flash(f'Round {round_number} deleted successfully for {player.name}!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting round. Please try again.', 'error')
+    
+    return redirect(url_for('handicap_dashboard'))
+
 @app.route('/apply_handicap', methods=['POST'])
 def apply_handicap():
     """Apply calculated handicap to tournament player"""
