@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Handicap Calculator{% endblock %}
@@ -152,4 +151,41 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function clearHandicapInputs() {
+    if (confirm('Are you sure you want to clear all input fields? This action cannot be undone.')) {
+        // Clear all text inputs
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.value = '';
+        });
+
+        // Clear all number inputs
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.value = '';
+        });
+
+        // Show success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.top = '20px';
+        alertDiv.style.right = '20px';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>All input fields cleared successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+
+        // Auto-remove alert after 3 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+}
+</script>
 {% endblock %}
