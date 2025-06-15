@@ -1036,17 +1036,89 @@ def sync_arccos_player(player_id):
             'success': True,
             'player_name': player.name,
             'last_sync': arccos_data.last_sync.strftime('%H:%M'),
-            'data': {
-                'avg_drive_distance': arccos_data.avg_drive_distance,
-                'fairways_hit_percentage': arccos_data.fairways_hit_percentage,
-                'greens_in_regulation_percentage': arccos_data.greens_in_regulation_percentage,
-                'average_putts_per_hole': arccos_data.average_putts_per_hole,
-                'strokes_gained_total': arccos_data.strokes_gained_total
-            }
+            'rounds_synced': result['rounds_synced'],
+            'message': f'Successfully synced {result["rounds_synced"]} rounds with hole-by-hole data'
         })
         
     except Exception as e:
         return jsonify({'error': 'Sync failed'}), 500
+
+@app.route('/sync_all_arccos_data', methods=['POST'])
+def sync_all_arccos_data():
+    """Sync Arccos data for all connected players and populate scorecards"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return jsonify({'error': 'No tournament found'}), 400
+    
+    try:
+        result = sync_arccos_data_for_tournament(tournament.id)
+        
+        return jsonify({
+            'success': True,
+            'total_players_synced': len(result['success']),
+            'total_rounds_synced': result['total_rounds_synced'],
+            'players_synced': result['success'],
+            'errors': result['errors']
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Sync failed: {str(e)}'}), 500
+
+@app.route('/player_shot_analysis/<int:player_id>')
+def player_shot_analysis(player_id):
+    """View detailed shot analysis for a player across all tournament days"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash('No tournament found.', 'error')
+        return redirect(url_for('index'))
+    
+    player = Player.query.get_or_404(player_id)
+    
+    # Get multi-day shot data
+    multi_day_data = get_multi_day_shot_data(player_id, tournament.id)
+    
+    # Get Arccos connection status
+    arccos_data = ArccosPlayerData.query.filter_by(
+        player_id=player_id,
+        tournament_id=tournament.id
+    ).first()
+    
+    return render_template('player_shot_analysis.html',
+                         player=player,
+                         tournament=tournament,
+                         multi_day_data=multi_day_data,
+                         arccos_data=arccos_data)
+
+@app.route('/auto_populate_scorecard/<int:player_id>/<int:round_id>', methods=['POST'])
+def auto_populate_scorecard(player_id, round_id):
+    """Automatically populate scorecard with Arccos shot data"""
+    try:
+        player = Player.query.get_or_404(player_id)
+        round_obj = Round.query.get_or_404(round_id)
+        
+        # Check if player has Arccos connection
+        arccos_data = ArccosPlayerData.query.filter_by(
+            player_id=player_id,
+            tournament_id=round_obj.tournament_id
+        ).first()
+        
+        if not arccos_data:
+            return jsonify({'error': 'Player not connected to Arccos'}), 400
+        
+        # Sync data for this specific round
+        result = sync_player_arccos_data(arccos_data)
+        
+        if result['success']:
+            return jsonify({
+                'success': True,
+                'message': f'Scorecard populated with Arccos data for {player.name}',
+                'rounds_synced': result['rounds_synced']
+            })
+        else:
+            return jsonify({'error': result['error']}), 400
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to populate scorecard: {str(e)}'}), 500
 
 @app.route('/disconnect_arccos_player/<int:player_id>', methods=['POST'])
 def disconnect_arccos_player(player_id):

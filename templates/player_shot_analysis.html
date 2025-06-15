@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}{{ player.name }} - Shot Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Tournament Header -->
+    <div class="tournament-header mb-4">
+        <h1>{{ tournament.name }}</h1>
+        <div class="tournament-dates">
+            {{ tournament.start_date.strftime('%B %d, %Y') }} - 
+            {{ (tournament.start_date + timedelta(days=2)).strftime('%B %d, %Y') }}
+        </div>
+    </div>
+
+    <!-- Player Shot Analysis Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">{{ player.name }} - Hole-by-Hole Shot Analysis</h2>
+                            <p class="text-muted mb-0">Detailed shot tracking data from Arccos Smart Sensors</p>
+                        </div>
+                        <div class="text-end">
+                            {% if arccos_data %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                                <div class="text-muted small">
+                                    Last sync: {{ arccos_data.last_sync.strftime('%m/%d %H:%M') }}
+                                </div>
+                            {% else %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> Not Connected
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if multi_day_data %}
+        <!-- Multi-Day Shot Analysis -->
+        {% for day_key, day_data in multi_day_data.items() %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-dark">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            Day {{ day_key.split('_')[1] }} - {{ day_data.date }}
+                            <span class="badge bg-info ms-2">{{ day_data.format.replace('_', ' ').title() }}</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Round Summary Stats -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-number">{{ day_data.shot_data|length }}</div>
+                                    <div class="stat-label">Holes Tracked</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    {% set total_strokes = day_data.shot_data.values() | map(attribute='strokes') | select('number') | sum %}
+                                    <div class="stat-number">{{ total_strokes or 'N/A' }}</div>
+                                    <div class="stat-label">Total Strokes</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    {% set total_putts = day_data.shot_data.values() | map(attribute='putts') | select('number') | sum %}
+                                    <div class="stat-number">{{ total_putts or 'N/A' }}</div>
+                                    <div class="stat-label">Total Putts</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    {% set fairways_hit = day_data.shot_data.values() | selectattr('fairway_hit', 'equalto', true) | list | length %}
+                                    <div class="stat-number">{{ fairways_hit }}/14</div>
+                                    <div class="stat-label">Fairways Hit</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hole-by-Hole Breakdown -->
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Hole</th>
+                                        <th>Par</th>
+                                        <th>Score</th>
+                                        <th>Putts</th>
+                                        <th>Fairway</th>
+                                        <th>GIR</th>
+                                        <th>Shot Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for hole_num in range(1, 19) %}
+                                        {% set hole_data = day_data.shot_data.get(hole_num|string) %}
+                                        {% if hole_data %}
+                                        <tr>
+                                            <td><strong>{{ hole_num }}</strong></td>
+                                            <td>{{ hole_data.par }}</td>
+                                            <td>
+                                                {% if hole_data.strokes %}
+                                                    {{ get_golf_score_symbol(hole_data.strokes, hole_data.par)|safe }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ hole_data.putts or '-' }}</td>
+                                            <td>
+                                                {% if hole_data.fairway_hit is not none %}
+                                                    {% if hole_data.fairway_hit %}
+                                                        <i class="fas fa-check text-success"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-times text-danger"></i>
+                                                    {% endif %}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if hole_data.green_in_regulation is not none %}
+                                                    {% if hole_data.green_in_regulation %}
+                                                        <i class="fas fa-check text-success"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-times text-danger"></i>
+                                                    {% endif %}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if hole_data.shots %}
+                                                    <button class="btn btn-sm btn-outline-info" type="button" 
+                                                            data-bs-toggle="collapse" 
+                                                            data-bs-target="#shots-{{ day_key }}-{{ hole_num }}" 
+                                                            aria-expanded="false">
+                                                        <i class="fas fa-eye"></i> View Shots ({{ hole_data.shots|length }})
+                                                    </button>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% if hole_data.shots %}
+                                        <tr>
+                                            <td colspan="7" class="p-0">
+                                                <div class="collapse" id="shots-{{ day_key }}-{{ hole_num }}">
+                                                    <div class="card card-body bg-secondary">
+                                                        <h6>Shot-by-Shot Breakdown - Hole {{ hole_num }}</h6>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm table-dark">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Shot #</th>
+                                                                        <th>Club</th>
+                                                                        <th>Distance</th>
+                                                                        <th>Lie</th>
+                                                                        <th>Result</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for shot in hole_data.shots %}
+                                                                    <tr>
+                                                                        <td>{{ shot.shot_number }}</td>
+                                                                        <td>{{ shot.club or '-' }}</td>
+                                                                        <td>
+                                                                            {% if shot.distance %}
+                                                                                {{ "%.0f"|format(shot.distance) }}y
+                                                                            {% else %}
+                                                                                -
+                                                                            {% endif %}
+                                                                        </td>
+                                                                        <td>{{ shot.lie or '-' }}</td>
+                                                                        <td>{{ shot.result or '-' }}</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- No Shot Data Available -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-dark">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <h4>No Shot Analysis Data Available</h4>
+                        <p class="text-muted">
+                            {% if not arccos_data %}
+                                Player is not connected to Arccos Smart Sensors.
+                            {% else %}
+                                No shot data has been synced yet. Try syncing the player's data.
+                            {% endif %}
+                        </p>
+                        {% if arccos_data %}
+                            <button class="btn btn-primary" onclick="syncPlayerData({{ player.id }})">
+                                <i class="fas fa-sync"></i> Sync Arccos Data
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Tournament
+                </a>
+                <a href="{{ url_for('arccos_dashboard') }}" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> Arccos Dashboard
+                </a>
+                {% if arccos_data %}
+                    <button class="btn btn-primary" onclick="syncPlayerData({{ player.id }})">
+                        <i class="fas fa-sync"></i> Refresh Data
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function syncPlayerData(playerId) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+    
+    fetch(`/sync_arccos_player/${playerId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Success: ${data.message}`);
+            window.location.reload();
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        alert('Sync failed. Please try again.');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+</script>
+{% endblock %}

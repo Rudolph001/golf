@@ -205,10 +205,9 @@ def store_arccos_round_analytics(player_id, round_id, round_data, hole_data):
     ).first()
     
     if not arccos_round:
-        arccos_round = ArccosRoundData(
-            player_id=player_id,
-            round_id=round_id
-        )
+        arccos_round = ArccosRoundData()
+        arccos_round.player_id = player_id
+        arccos_round.round_id = round_id
         db.session.add(arccos_round)
     
     # Store round-level statistics
