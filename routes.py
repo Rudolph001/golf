@@ -97,25 +97,25 @@ def get_prize_distribution(player_count):
         'main_prizes': prizes,
         'daily_special_prizes': {
             'day_1': {
-                'most_pars_front': 30000, 
-                'most_pars_back': 30000, 
-                'beat_handicap': 30000,
-                'most_birdies': 30000,
-                'most_pars': 30000
+                'most_pars_front': 10000, 
+                'most_pars_back': 10000, 
+                'beat_handicap': 10000,
+                'most_birdies': 10000,
+                'most_pars': 10000
             },
             'day_2': {
-                'most_pars_front': 30000, 
-                'most_pars_back': 30000, 
-                'beat_handicap': 30000,
-                'most_birdies': 30000,
-                'most_pars': 30000
+                'most_pars_front': 10000, 
+                'most_pars_back': 10000, 
+                'beat_handicap': 10000,
+                'most_birdies': 10000,
+                'most_pars': 10000
             },
             'day_3': {
-                'most_pars_front': 30000, 
-                'most_pars_back': 30000, 
-                'beat_handicap': 30000,
-                'most_birdies': 30000,
-                'most_pars': 30000
+                'most_pars_front': 10000, 
+                'most_pars_back': 10000, 
+                'beat_handicap': 10000,
+                'most_birdies': 10000,
+                'most_pars': 10000
             }
         }
     }
@@ -553,7 +553,7 @@ def auto_award_daily_special_prizes(tournament_id, day):
                     day=day,
                     prize_type=prize_type,
                     player_id=player_id,
-                    amount=30000
+                    amount=10000
                 )
                 db.session.add(special_prize)
     
