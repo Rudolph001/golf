@@ -26,6 +26,9 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
 }
 
+# Arccos API configuration
+app.config["ARCCOS_API_KEY"] = os.environ.get("ARCCOS_API_KEY")
+
 # Initialize the app with the extension
 db.init_app(app)
 

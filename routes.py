@@ -4,6 +4,8 @@ from models import Tournament, Player, Round, Score, SpecialPrize, HandicapPlaye
 from arccos_integration import (sync_arccos_data_for_tournament, sync_player_arccos_data, 
                                get_arccos_shot_analysis, get_multi_day_shot_data,
                                auto_sync_all_tournament_data)
+from arccos_scorecard_sync import (auto_populate_all_player_scorecards, auto_populate_player_scorecards,
+                                  clear_all_scorecards_keep_arccos)
 from datetime import datetime, date
 from sqlalchemy import func
 

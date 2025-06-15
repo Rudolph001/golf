@@ -42,8 +42,11 @@
                                     </div>
                                     <small class="text-muted">Last Sync: <span id="sync-{{ player.id }}">2 min ago</span></small>
                                     <div class="mt-2">
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="setupPlayer('{{ player.id }}', '{{ player.name }}')">
-                                            <i class="fas fa-cog"></i>Setup
+                                        <button class="btn btn-sm btn-outline-secondary me-1" onclick="setupPlayer('{{ player.id }}', '{{ player.name }}')">
+                                            <i class="fas fa-cog"></i> Setup
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewPlayerShotAnalysis({{ player.id }})">
+                                            <i class="fas fa-chart-line"></i> Analysis
                                         </button>
                                     </div>
                                 </div>

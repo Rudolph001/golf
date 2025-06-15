@@ -117,6 +117,10 @@ This is a Flask-based web application for managing a family golf tournament at P
 - June 15, 2025: Updated prize amounts from R10,000 to R30,000 each for daily special prizes
 - June 15, 2025: Removed manual special prize selection interface - system now automatically awards based on score analysis
 - June 15, 2025: Changed "Straightest Drive" to "Most Birdies" with proper birdie counting logic (scores under par)
+- June 15, 2025: Integrated comprehensive Arccos Smart Sensors hole-by-hole shot analysis system
+- June 15, 2025: Added automatic scorecard population from Arccos data for all tournament days
+- June 15, 2025: Created detailed shot analysis dashboard with club performance, accuracy metrics, and GPS tracking
+- June 15, 2025: Enhanced Arccos dashboard with auto-populate buttons for bulk scorecard filling
 
 ## Changelog
 - June 14, 2025. Initial tournament system setup
