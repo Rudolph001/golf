@@ -159,27 +159,45 @@
 {% block scripts %}
 <script>
 function clearHandicapInputs() {
-    if (confirm('Are you sure you want to clear all input fields? This action cannot be undone.')) {
-        // Clear all text inputs
-        document.querySelectorAll('input[type="text"]').forEach(input => {
-            input.value = '';
+    if (confirm('Are you sure you want to clear the player name input field?')) {
+        // Clear the player name input specifically
+        const playerNameInput = document.querySelector('input[name="player_name"]');
+        let clearedCount = 0;
+        
+        if (playerNameInput) {
+            playerNameInput.value = '';
+            clearedCount++;
+        }
+
+        // Also clear any other text/number inputs that might be present
+        document.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => {
+            if (input !== playerNameInput && input.value) {
+                input.value = '';
+                clearedCount++;
+            }
         });
 
-        // Clear all number inputs
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.value = '';
-        });
-
-        // Show success message
+        // Show appropriate message
         const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.className = 'alert alert-dismissible fade show position-fixed';
         alertDiv.style.top = '20px';
         alertDiv.style.right = '20px';
         alertDiv.style.zIndex = '9999';
-        alertDiv.innerHTML = `
-            <i class="fas fa-check-circle me-2"></i>All input fields cleared successfully!
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
+        
+        if (clearedCount > 0) {
+            alertDiv.classList.add('alert-success');
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>Cleared ${clearedCount} input field(s) successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        } else {
+            alertDiv.classList.add('alert-info');
+            alertDiv.innerHTML = `
+                <i class="fas fa-info-circle me-2"></i>No input fields to clear.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        }
+        
         document.body.appendChild(alertDiv);
 
         // Auto-remove alert after 3 seconds
