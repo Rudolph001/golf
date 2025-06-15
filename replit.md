@@ -116,6 +116,7 @@ This is a Flask-based web application for managing a family golf tournament at P
 - June 15, 2025: Implemented automatic special prize calculation system - winners determined by scorecard performance instead of manual selection
 - June 15, 2025: Updated prize amounts from R10,000 to R30,000 each for daily special prizes
 - June 15, 2025: Removed manual special prize selection interface - system now automatically awards based on score analysis
+- June 15, 2025: Changed "Straightest Drive" to "Most Birdies" with proper birdie counting logic (scores under par)
 
 ## Changelog
 - June 14, 2025. Initial tournament system setup
