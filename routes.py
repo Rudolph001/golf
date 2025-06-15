@@ -251,12 +251,8 @@ def prize_money():
         special_prize_amounts[key] += prize.amount
         prize_counts[key] += 1
     
-    # Calculate typical prize amount (use the most common amount or 10000 as fallback)
-    if special_prize_amounts:
-        typical_amount = max(set(prize.amount for prize in special_prizes), 
-                           key=lambda x: sum(1 for p in special_prizes if p.amount == x))
-    else:
-        typical_amount = 10000
+    # Use the correct base prize amount of R10,000 per prize
+    typical_amount = 10000
     
     return render_template('prize_money.html',
                          tournament=tournament,
@@ -567,12 +563,14 @@ def auto_award_daily_special_prizes(tournament_id, day):
     # Clear existing special prizes for this day
     SpecialPrize.query.filter_by(tournament_id=tournament_id, day=day).delete()
     
-    # Award new special prizes with split amounts for ties
+    # Award new special prizes with proper R150,000 total allocation
+    # Daily allocation: R50,000 per day (R150,000 ÷ 3 days)
+    # Prize allocation: R10,000 per prize (R50,000 ÷ 5 prizes per day)
     for prize_type, player_ids in winners.items():
         if player_ids:  # Only award if there are actual winners
-            # Split the R10,000 prize equally among all winners
-            total_prize = 10000
-            split_amount = total_prize // len(player_ids)  # Integer division to avoid cents
+            # Each prize is worth R10,000, split equally among tied winners
+            base_prize = 10000
+            split_amount = base_prize // len(player_ids)  # Integer division to avoid cents
             
             for player_id in player_ids:
                 special_prize = SpecialPrize(
