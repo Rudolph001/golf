@@ -116,22 +116,42 @@ class Score(db.Model):
     
     def _distribute_handicap_strokes(self, handicap):
         """Distribute handicap strokes across holes based on hole difficulty"""
+        # Initialize handicap strokes for each hole
         handicap_strokes = {}
+        for i in range(1, 19):
+            handicap_strokes[i] = 0
         
-        # Sort holes by handicap rating (difficulty)
+        # If handicap is 0 or negative, no strokes given
+        if handicap <= 0:
+            return handicap_strokes
+        
+        # Sort holes by handicap rating (difficulty) - lower number = harder hole
         holes_by_difficulty = sorted(PINACLEPOINT_COURSE['holes'], key=lambda x: x['handicap'])
         
-        # Distribute strokes starting with most difficult holes
-        remaining_strokes = handicap
+        remaining_strokes = int(handicap)
+        
+        # First round: Give one stroke to holes based on difficulty
+        # Start with hardest holes (lowest handicap rating)
         for hole in holes_by_difficulty:
             if remaining_strokes > 0:
                 hole_number = hole['number']
                 handicap_strokes[hole_number] = 1
                 remaining_strokes -= 1
-                
-                # If handicap > 18, give second stroke to most difficult holes
-                if remaining_strokes > 0 and handicap > 18:
+        
+        # Second round: If handicap > 18, give second strokes starting with hardest holes again
+        if remaining_strokes > 0:
+            for hole in holes_by_difficulty:
+                if remaining_strokes > 0:
+                    hole_number = hole['number']
                     handicap_strokes[hole_number] = 2
+                    remaining_strokes -= 1
+        
+        # Third round: If handicap > 36, give third strokes (rare case)
+        if remaining_strokes > 0:
+            for hole in holes_by_difficulty:
+                if remaining_strokes > 0:
+                    hole_number = hole['number']
+                    handicap_strokes[hole_number] = 3
                     remaining_strokes -= 1
         
         return handicap_strokes

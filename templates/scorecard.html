@@ -112,7 +112,7 @@
                                             {% if handicap_strokes.get(hole, 0) > 0 %}
                                                 <span class="badge bg-primary">{{ handicap_strokes.get(hole, 0) }}</span>
                                             {% else %}
-                                                -
+                                                <span class="text-muted">-</span>
                                             {% endif %}
                                         </td>
                                         {% endfor %}
@@ -206,7 +206,7 @@
                                             {% if handicap_strokes.get(hole, 0) > 0 %}
                                                 <span class="badge bg-primary">{{ handicap_strokes.get(hole, 0) }}</span>
                                             {% else %}
-                                                -
+                                                <span class="text-muted">-</span>
                                             {% endif %}
                                         </td>
                                         {% endfor %}

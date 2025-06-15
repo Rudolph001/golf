@@ -1,29 +1,55 @@
 // Golf Tournament Scorecard JavaScript
 
 function distributeHandicapStrokes(handicap) {
-    // Hole handicap ratings (difficulty order)
+    // Hole handicap ratings (difficulty order) - lower number = harder hole
     const holeHandicaps = {
         1: 12, 2: 8, 3: 16, 4: 2, 5: 18, 6: 10, 7: 14, 8: 6, 9: 4,
         10: 11, 11: 13, 12: 5, 13: 15, 14: 9, 15: 17, 16: 1, 17: 3, 18: 7
     };
 
-    // Sort holes by difficulty (1 = hardest, 18 = easiest)
-    const sortedHoles = Object.entries(holeHandicaps).sort((a, b) => a[1] - b[1]);
-
+    // Initialize handicap strokes for each hole
     const handicapStrokes = {};
-    let remainingStrokes = handicap;
+    for (let i = 1; i <= 18; i++) {
+        handicapStrokes[i] = 0;
+    }
 
-    // Distribute strokes starting with most difficult holes
-    for (const [hole, difficulty] of sortedHoles) {
-        if (remainingStrokes > 0) {
-            handicapStrokes[parseInt(hole)] = 1;
+    // If handicap is 0 or negative, no strokes given
+    if (handicap <= 0) {
+        return handicapStrokes;
+    }
+
+    // Sort holes by difficulty (1 = hardest, 18 = easiest)
+    const sortedHoles = [];
+    for (let hole = 1; hole <= 18; hole++) {
+        sortedHoles.push({hole: hole, difficulty: holeHandicaps[hole]});
+    }
+    sortedHoles.sort((a, b) => a.difficulty - b.difficulty);
+
+    let remainingStrokes = Math.floor(handicap);
+
+    // First round: Give one stroke to holes based on difficulty
+    // Start with hardest holes (lowest handicap rating)
+    for (let i = 0; i < sortedHoles.length && remainingStrokes > 0; i++) {
+        const holeNum = sortedHoles[i].hole;
+        handicapStrokes[holeNum] = 1;
+        remainingStrokes--;
+    }
+
+    // Second round: If handicap > 18, give second strokes starting with hardest holes again
+    if (remainingStrokes > 0) {
+        for (let i = 0; i < sortedHoles.length && remainingStrokes > 0; i++) {
+            const holeNum = sortedHoles[i].hole;
+            handicapStrokes[holeNum] = 2;
             remainingStrokes--;
+        }
+    }
 
-            // If handicap > 18, give second stroke to most difficult holes
-            if (remainingStrokes > 0 && handicap > 18) {
-                handicapStrokes[parseInt(hole)] = 2;
-                remainingStrokes--;
-            }
+    // Third round: If handicap > 36, give third strokes (rare case)
+    if (remainingStrokes > 0) {
+        for (let i = 0; i < sortedHoles.length && remainingStrokes > 0; i++) {
+            const holeNum = sortedHoles[i].hole;
+            handicapStrokes[holeNum] = 3;
+            remainingStrokes--;
         }
     }
 
