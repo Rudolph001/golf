@@ -419,7 +419,7 @@ def day_scorecard(day):
 
 @app.route('/special_prizes')
 def special_prizes():
-    """Manage daily special prizes (longest drive, closest to hole, most birdies)"""
+    """Manage daily special prizes (most pars front 9, most pars back 9, beat handicap)"""
     tournament = Tournament.query.first()
     if not tournament:
         return redirect(url_for('player_setup'))
@@ -431,7 +431,7 @@ def special_prizes():
     daily_special_prizes = {}
     for day in [1, 2, 3]:
         daily_special_prizes[day] = {}
-        for prize_type in ['longest_drive', 'closest_hole', 'most_birdies', 'straightest_drive', 'most_pars']:
+        for prize_type in ['most_pars_front', 'most_pars_back', 'beat_handicap', 'straightest_drive', 'most_pars']:
             prize = SpecialPrize.query.filter_by(
                 tournament_id=tournament.id, 
                 day=day, 
