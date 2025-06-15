@@ -4,6 +4,28 @@ from models import Tournament, Player, Round, Score, SpecialPrize, PINACLEPOINT_
 from datetime import datetime, date
 from sqlalchemy import func
 
+def get_golf_score_symbol(score, par):
+    """Return HTML for traditional golf scoring symbols"""
+    diff = score - par
+    
+    if diff <= -3:  # Albatross or better
+        return f'<div class="scoring-symbol triangle" data-score="{score}"></div>'
+    elif diff == -2:  # Eagle
+        return f'<div class="scoring-symbol double-circle" data-score="{score}">{score}</div>'
+    elif diff == -1:  # Birdie
+        return f'<div class="scoring-symbol circle" data-score="{score}">{score}</div>'
+    elif diff == 0:  # Par
+        return f'<div class="scoring-symbol par" data-score="{score}">{score}</div>'
+    elif diff == 1:  # Bogey
+        return f'<div class="scoring-symbol square" data-score="{score}">{score}</div>'
+    elif diff == 2:  # Double Bogey
+        return f'<div class="scoring-symbol double-square" data-score="{score}">{score}</div>'
+    else:  # Triple Bogey or worse
+        return f'<div class="scoring-symbol triple-square" data-score="{score}">{score}</div>'
+
+# Make the function available in templates
+app.jinja_env.globals.update(get_golf_score_symbol=get_golf_score_symbol)
+
 def get_prize_distribution(player_count):
     """Calculate dynamic prize distribution with strict descending order and round values"""
     # Total R1,150,000 - R150,000 for daily special prizes
@@ -422,6 +444,41 @@ def day_scorecard(day):
                          rounds=[round_obj],
                          tournament_formats=TOURNAMENT_FORMATS,
                          selected_day=day)
+
+@app.route('/day_board/<int:day>')
+def day_scorecard_board(day):
+    """Professional tournament scorecard board for a specific day"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    if day not in [1, 2, 3]:
+        flash('Invalid day. Please select day 1, 2, or 3.', 'error')
+        return redirect(url_for('scoreboard'))
+    
+    # Get the round for this day
+    round_obj = Round.query.filter_by(tournament_id=tournament.id, day=day).first()
+    if not round_obj:
+        flash(f'Day {day} round not found.', 'error')
+        return redirect(url_for('scoreboard'))
+    
+    # Get leaderboard data
+    leaderboard = calculate_leaderboard(tournament.id)
+    
+    # Get scores for this specific day, organized by player
+    scores_by_player = {}
+    scores = Score.query.filter_by(round_id=round_obj.id).all()
+    for score in scores:
+        scores_by_player[score.player_id] = score
+    
+    return render_template('day_scorecard_board.html',
+                         tournament=tournament,
+                         day=day,
+                         round=round_obj,
+                         leaderboard=leaderboard,
+                         scores_by_player=scores_by_player,
+                         course=PINACLEPOINT_COURSE,
+                         tournament_formats=TOURNAMENT_FORMATS)
 
 @app.route('/special_prizes')
 def special_prizes():
