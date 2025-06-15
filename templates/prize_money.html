@@ -290,15 +290,36 @@
     <!-- Special Prizes Winners Breakdown -->
     {% for day in [1, 2, 3] %}
     {% set daily_winners = [] %}
+    {% set daily_prizes_by_type = {} %}
+    
+    <!-- Collect all special prizes for this day to calculate splits -->
     {% for player_data in leaderboard %}
         {% for detail in player_data.special_prizes_detail %}
             {% if detail.startswith('Day ' ~ day) %}
-                {% set _ = daily_winners.append({'player': player_data.player.name, 'prize': detail}) %}
+                {% set prize_type = detail.split(' ', 2)[2] %}
+                {% if prize_type not in daily_prizes_by_type %}
+                    {% set _ = daily_prizes_by_type.update({prize_type: []}) %}
+                {% endif %}
+                {% set _ = daily_prizes_by_type[prize_type].append({'player': player_data.player.name, 'amount': 0}) %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+    
+    <!-- Calculate actual prize amounts from database -->
+    {% for player_data in leaderboard %}
+        {% for prize in player_data.player.special_prizes %}
+            {% if prize.day == day %}
+                {% set prize_type = prize.prize_type.replace('_', ' ').title() %}
+                {% for winner in daily_prizes_by_type.get(prize_type, []) %}
+                    {% if winner.player == player_data.player.name %}
+                        {% set _ = winner.update({'amount': prize.amount}) %}
+                    {% endif %}
+                {% endfor %}
             {% endif %}
         {% endfor %}
     {% endfor %}
 
-    {% if daily_winners %}
+    {% if daily_prizes_by_type %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -310,13 +331,20 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% for winner in daily_winners %}
-                        <div class="col-md-6 mb-2">
-                            <div class="alert alert-success mb-2">
-                                <strong>{{ winner.player }}</strong> - {{ winner.prize.split(' ', 2)[2] }}
-                                <span class="badge bg-success ms-2">R10,000</span>
+                        {% for prize_type, winners in daily_prizes_by_type.items() %}
+                            {% for winner in winners %}
+                            <div class="col-md-6 mb-2">
+                                <div class="alert alert-success mb-2">
+                                    <strong>{{ winner.player }}</strong> - {{ prize_type }}
+                                    <span class="badge bg-success ms-2">
+                                        R{{ "{:,}".format(winner.amount) }}
+                                        {% if winners|length > 1 %}
+                                        <small>(Split {{ winners|length }} ways)</small>
+                                        {% endif %}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                            {% endfor %}
                         {% endfor %}
                     </div>
                 </div>
