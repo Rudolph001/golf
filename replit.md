@@ -113,6 +113,9 @@ This is a Flask-based web application for managing a family golf tournament at P
 - June 14, 2025: Updated par calculation logic to use actual days with scores (1 day = 72 par, 2 days = 144 par, 3 days = 216 par)
 - June 14, 2025: Enhanced scorecard template with professional styling matching other dashboards (tournament header, leaderboard cards, stats cards)
 - June 15, 2025: Updated daily special skill prizes - changed to Most Pars Front 9, Most Pars Back 9, and Beat Handicap categories
+- June 15, 2025: Implemented automatic special prize calculation system - winners determined by scorecard performance instead of manual selection
+- June 15, 2025: Updated prize amounts from R10,000 to R30,000 each for daily special prizes
+- June 15, 2025: Removed manual special prize selection interface - system now automatically awards based on score analysis
 
 ## Changelog
 - June 14, 2025. Initial tournament system setup

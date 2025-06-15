@@ -425,15 +425,12 @@ def day_scorecard(day):
 
 @app.route('/special_prizes')
 def special_prizes():
-    """Manage daily special prizes (most pars front 9, most pars back 9, beat handicap)"""
+    """View automatically calculated daily special prizes"""
     tournament = Tournament.query.first()
     if not tournament:
         return redirect(url_for('player_setup'))
     
-    players = Player.query.filter_by(tournament_id=tournament.id).all()
-    rounds = Round.query.filter_by(tournament_id=tournament.id).order_by(Round.day).all()
-    
-    # Get existing special prize winners organized by day
+    # Get existing special prize winners organized by day (automatically calculated)
     daily_special_prizes = {}
     for day in [1, 2, 3]:
         daily_special_prizes[day] = {}
@@ -445,74 +442,10 @@ def special_prizes():
             ).first()
             daily_special_prizes[day][prize_type] = prize
     
-    return render_template('daily_special_prizes.html',
+    return render_template('daily_special_prizes_view.html',
                          tournament=tournament,
-                         players=players,
-                         rounds=rounds,
                          daily_special_prizes=daily_special_prizes,
                          tournament_formats=TOURNAMENT_FORMATS)
-
-@app.route('/award_special_prize', methods=['POST'])
-def award_special_prize():
-    """Award a daily special prize to a player"""
-    tournament = Tournament.query.first()
-    if not tournament:
-        return redirect(url_for('player_setup'))
-    
-    day = request.form.get('day')
-    prize_type = request.form.get('prize_type')
-    player_id = request.form.get('player_id')
-    
-    if not day or not prize_type or not player_id:
-        flash('Please select day, prize type and player.', 'error')
-        return redirect(url_for('special_prizes'))
-    
-    # Remove existing prize of this type for this day
-    existing_prize = SpecialPrize.query.filter_by(
-        tournament_id=tournament.id, 
-        day=int(day), 
-        prize_type=prize_type
-    ).first()
-    if existing_prize:
-        db.session.delete(existing_prize)
-    
-    # Create new prize
-    new_prize = SpecialPrize(
-        tournament_id=tournament.id,
-        day=int(day),
-        prize_type=prize_type,
-        player_id=int(player_id)
-    )
-    db.session.add(new_prize)
-    db.session.commit()
-    
-    player = Player.query.get(player_id)
-    day_name = TOURNAMENT_FORMATS[int(day)]['name']
-    flash(f'Day {day} ({day_name}) {prize_type.replace("_", " ").title()} prize awarded to {player.name}!', 'success')
-    
-    return redirect(url_for('special_prizes'))
-
-@app.route('/clear_special_prizes', methods=['POST'])
-def clear_special_prizes():
-    """Clear all special prizes for a specific day or all days"""
-    tournament = Tournament.query.first()
-    if not tournament:
-        return redirect(url_for('player_setup'))
-    
-    day = request.form.get('day')
-    
-    if day == 'all':
-        # Clear all special prizes
-        SpecialPrize.query.filter_by(tournament_id=tournament.id).delete()
-        flash('All daily special prizes have been cleared!', 'success')
-    else:
-        # Clear prizes for specific day
-        SpecialPrize.query.filter_by(tournament_id=tournament.id, day=int(day)).delete()
-        day_name = TOURNAMENT_FORMATS[int(day)]['name']
-        flash(f'Day {day} ({day_name}) special prizes have been cleared!', 'success')
-    
-    db.session.commit()
-    return redirect(url_for('special_prizes'))
 
 @app.route('/toggle_prize_eligibility', methods=['POST'])
 def toggle_prize_eligibility():

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Special Prizes - Pinaclepoint Golf{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Special Prizes Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h1 class="card-title mb-0">
+                        <i class="fas fa-award me-2"></i>
+                        Daily Special Skill Prizes
+                    </h1>
+                    <p class="card-text mb-0">Automatically calculated based on scorecard performance</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Prize Winners -->
+    {% for day in [1, 2, 3] %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        Day {{ day }}: {{ tournament_formats[day].name }}
+                        <span class="badge bg-light text-dark ms-2">R150,000 Daily Total</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% set prize_info = {
+                            'most_pars_front': {'name': 'Most Pars Front 9', 'icon': 'fas fa-golf-ball', 'description': 'Most pars scored on holes 1-9'},
+                            'most_pars_back': {'name': 'Most Pars Back 9', 'icon': 'fas fa-target', 'description': 'Most pars scored on holes 10-18'},
+                            'beat_handicap': {'name': 'Beat Handicap', 'icon': 'fas fa-trophy', 'description': 'Player who performed best relative to their handicap'},
+                            'straightest_drive': {'name': 'Straightest Drive', 'icon': 'fas fa-arrows-alt-h', 'description': 'Most accurate drive down the fairway'},
+                            'most_pars': {'name': 'Most Pars', 'icon': 'fas fa-bullseye', 'description': 'Most pars scored in the day'}
+                        } %}
+                        
+                        {% for prize_type, info in prize_info.items() %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="{{ info.icon }} me-2"></i>
+                                        {{ info.name }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text small">{{ info.description }}</p>
+                                    <p class="text-success mb-2">
+                                        <strong>Prize: R30,000</strong>
+                                    </p>
+                                    
+                                    {% if daily_special_prizes[day][prize_type] %}
+                                    <div class="alert alert-success py-2">
+                                        <small><strong>Winner:</strong> {{ daily_special_prizes[day][prize_type].player.name }}</small>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-secondary py-2">
+                                        <small>No winner yet - needs scorecard data</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i>Automatic Prize Calculation</h5>
+                <ul class="mb-0">
+                    <li><strong>Winners are automatically determined</strong> when scorecard data is entered</li>
+                    <li><strong>Daily Special Prizes:</strong> R150,000 per day × 3 days = R450,000 (5 prizes × R30,000 each per day)</li>
+                    <li><strong>Main Tournament Prizes:</strong> R550,000 (distributed by final ranking)</li>
+                    <li><strong>Total Prize Pool:</strong> R1,000,000</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Admin Panel
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
