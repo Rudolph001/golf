@@ -20,39 +20,35 @@ def get_prize_distribution(player_count):
             }
         }
     
-    # Define round prize amounts based on player count
+    # Define round prize amounts based on player count - first place always R250,000
     if player_count == 1:
-        prizes = {1: 550000}
+        prizes = {1: 1000000}  # Single player gets all main prize money
     elif player_count == 2:
-        prizes = {1: 350000, 2: 200000}
+        prizes = {1: 700000, 2: 300000}
     elif player_count == 3:
-        prizes = {1: 250000, 2: 175000, 3: 125000}
+        prizes = {1: 500000, 2: 300000, 3: 200000}
     elif player_count == 4:
-        prizes = {1: 200000, 2: 150000, 3: 125000, 4: 75000}
+        prizes = {1: 400000, 2: 250000, 3: 200000, 4: 150000}
     elif player_count == 5:
-        prizes = {1: 250000, 2: 175000, 3: 125000, 4: 75000, 5: 65000}
+        prizes = {1: 300000, 2: 225000, 3: 175000, 4: 150000, 5: 150000}
     elif player_count == 6:
-        prizes = {1: 150000, 2: 120000, 3: 90000, 4: 75000, 5: 65000, 6: 50000}
-    elif player_count == 7:
-        prizes = {1: 140000, 2: 110000, 3: 85000, 4: 70000, 5: 60000, 6: 50000, 7: 35000}
-    elif player_count == 8:
-        prizes = {1: 140000, 2: 100000, 3: 75000, 4: 65000, 5: 50000, 6: 45000, 7: 40000, 8: 35000}
+        prizes = {1: 250000, 2: 175000, 3: 150000, 4: 125000, 5: 150000, 6: 150000}
     else:
-        # For more than 8 players: predefined amounts for top 8, then descending amounts
-        base_prizes = {1: 140000, 2: 100000, 3: 75000, 4: 65000, 5: 50000, 6: 45000, 7: 40000, 8: 35000}
-        prizes = base_prizes.copy()
+        # For 7+ players: first place R250,000, then descending amounts
+        prizes = {1: 250000, 2: 175000, 3: 125000, 4: 100000, 5: 75000, 6: 65000, 7: 55000, 8: 50000}
         
-        # Calculate remaining prize money
-        used_prize_money = sum(base_prizes.values())
-        remaining_prize_money = total_main_prize - used_prize_money
-        remaining_players = player_count - 8
-        
-        if remaining_players > 0:
-            # Start at 30000 and decrease by 2500 for each position
-            current_amount = 30000
-            for position in range(9, player_count + 1):
-                prizes[position] = max(15000, current_amount)  # Minimum R15,000
-                current_amount -= 2500
+        if player_count > 8:
+            # For more than 8 players: remaining money distributed to additional players
+            used_prize_money = sum(prizes.values())
+            remaining_prize_money = total_main_prize - used_prize_money
+            remaining_players = player_count - 8
+            
+            if remaining_players > 0:
+                # Start at 45000 and decrease by 2500 for each position
+                current_amount = 45000
+                for position in range(9, player_count + 1):
+                    prizes[position] = max(20000, current_amount)  # Minimum R20,000
+                    current_amount -= 2500
     
     def round_to_nearest_500(amount):
         """Round amounts to nearest R500 for cleaner values"""
