@@ -546,15 +546,16 @@ def auto_award_daily_special_prizes(tournament_id, day):
     
     # Award new special prizes
     for prize_type, player_ids in winners.items():
-        for player_id in player_ids:
-            special_prize = SpecialPrize(
-                tournament_id=tournament_id,
-                day=day,
-                prize_type=prize_type,
-                player_id=player_id,
-                amount=30000
-            )
-            db.session.add(special_prize)
+        if player_ids:  # Only award if there are actual winners
+            for player_id in player_ids:
+                special_prize = SpecialPrize(
+                    tournament_id=tournament_id,
+                    day=day,
+                    prize_type=prize_type,
+                    player_id=player_id,
+                    amount=30000
+                )
+                db.session.add(special_prize)
     
     db.session.commit()
 
@@ -733,35 +734,19 @@ def calculate_leaderboard(tournament_id):
             player_data['net_score'] = None
             player_data['par_score'] = None
         
-        # Calculate special prizes won by this player (both manual and automatic)
+        # Calculate special prizes won by this player
         special_prizes_total = 0
         special_prizes_detail = []
         
-        try:
-            # Manual special prizes from database
-            manual_special_prizes = SpecialPrize.query.filter_by(
-                tournament_id=tournament_id, 
-                player_id=player.id
-            ).all()
-            for prize in manual_special_prizes:
-                special_prizes_total += 30000  # R30,000 per manual special prize
-                special_prizes_detail.append(f"Day {prize.day} {prize.prize_type.replace('_', ' ').title()}")
-        except Exception:
-            # Handle case where day column doesn't exist yet
-            pass
+        # Get automatic special prizes from database (not calculated on-the-fly to avoid duplicates)
+        auto_special_prizes = SpecialPrize.query.filter_by(
+            tournament_id=tournament_id, 
+            player_id=player.id
+        ).all()
         
-        # Automatic special prizes based on performance
-        for day in [1, 2, 3]:
-            daily_winners = calculate_daily_special_prizes(tournament_id, day)
-            for prize_type, winner_ids in daily_winners.items():
-                if player.id in winner_ids and len(winner_ids) > 0:
-                    # Split prize money among tied winners
-                    prize_amount = 30000 // len(winner_ids)  # R30,000 split among winners
-                    special_prizes_total += prize_amount
-                    if len(winner_ids) > 1:
-                        special_prizes_detail.append(f"Day {day} {prize_type.replace('_', ' ').title()} (Split {len(winner_ids)} ways)")
-                    else:
-                        special_prizes_detail.append(f"Day {day} {prize_type.replace('_', ' ').title()}")
+        for prize in auto_special_prizes:
+            special_prizes_total += prize.amount  # Use actual amount from database
+            special_prizes_detail.append(f"Day {prize.day} {prize.prize_type.replace('_', ' ').title()}")
         
         player_data['special_prizes_won'] = special_prizes_total
         player_data['special_prizes_detail'] = special_prizes_detail
