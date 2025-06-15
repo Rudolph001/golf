@@ -30,7 +30,7 @@ def get_prize_distribution(player_count):
     elif player_count == 4:
         prizes = {1: 200000, 2: 150000, 3: 125000, 4: 75000}
     elif player_count == 5:
-        prizes = {1: 175000, 2: 135000, 3: 100000, 4: 75000, 5: 65000}
+        prizes = {1: 250000, 2: 175000, 3: 125000, 4: 75000, 5: 65000}
     elif player_count == 6:
         prizes = {1: 150000, 2: 120000, 3: 90000, 4: 75000, 5: 65000, 6: 50000}
     elif player_count == 7:
@@ -635,6 +635,10 @@ def calculate_leaderboard(tournament_id):
     player_count = len(prize_eligible_players)
     prize_distribution = get_prize_distribution(player_count)
     
+    # Debug: Print prize distribution
+    print(f"Prize eligible players: {player_count}")
+    print(f"Prize distribution: {prize_distribution['main_prizes']}")
+    
     # Handle ties and calculate split prize money
     current_rank = 1
     current_prize_rank = 1  # Separate counter for prize distribution
@@ -684,6 +688,7 @@ def calculate_leaderboard(tournament_id):
                 player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
                 player_data['is_tied'] = len(tied_players) > 1
                 player_data['tied_positions'] = positions_involved
+                player_data['prize_position'] = current_prize_rank  # Track prize position
         elif len(prize_eligible_tied) == 1 and current_score is not None:
             # Single eligible player at this position
             player_data = prize_eligible_tied[0]
@@ -691,6 +696,7 @@ def calculate_leaderboard(tournament_id):
             player_data['prize'] = prize_distribution['main_prizes'].get(current_prize_rank, 0)
             player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
             player_data['is_tied'] = len(tied_players) > 1
+            player_data['prize_position'] = current_prize_rank  # Track prize position
         elif len(prize_eligible_tied) == 1:
             # Single eligible player with no score
             player_data = prize_eligible_tied[0]
@@ -698,6 +704,7 @@ def calculate_leaderboard(tournament_id):
             player_data['prize'] = 0
             player_data['total_winnings'] = player_data['prize'] + player_data['special_prizes_won']
             player_data['is_tied'] = False
+            player_data['prize_position'] = None
         
         # Handle non-eligible players (show rank but no prize money)
         for player_data in non_eligible_tied:
@@ -706,6 +713,7 @@ def calculate_leaderboard(tournament_id):
             player_data['total_winnings'] = player_data['special_prizes_won']  # Only special prizes if any
             player_data['is_tied'] = len(tied_players) > 1
             player_data['is_non_eligible'] = True  # Flag for display purposes
+            player_data['prize_position'] = None
         
         # Move to next unprocessed position
         current_rank += len(tied_players)
