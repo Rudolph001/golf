@@ -130,6 +130,316 @@
                         </div>
                     </div>
 
+                    <!-- Advanced Analytics Tabs -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <ul class="nav nav-tabs card-header-tabs" id="analyticsTab" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="driving-tab" data-bs-toggle="tab" data-bs-target="#driving" type="button" role="tab">
+                                                <i class="fas fa-tachometer-alt me-1"></i>Driving
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="approach-tab" data-bs-toggle="tab" data-bs-target="#approach" type="button" role="tab">
+                                                <i class="fas fa-target me-1"></i>Approach
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="shortgame-tab" data-bs-toggle="tab" data-bs-target="#shortgame" type="button" role="tab">
+                                                <i class="fas fa-golf-ball me-1"></i>Short Game
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="putting-tab" data-bs-toggle="tab" data-bs-target="#putting" type="button" role="tab">
+                                                <i class="fas fa-crosshairs me-1"></i>Putting
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="physical-tab" data-bs-toggle="tab" data-bs-target="#physical" type="button" role="tab">
+                                                <i class="fas fa-heartbeat me-1"></i>Physical
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="course-tab" data-bs-toggle="tab" data-bs-target="#course" type="button" role="tab">
+                                                <i class="fas fa-map me-1"></i>Course Mgmt
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content" id="analyticsTabContent">
+                                        <!-- Driving Analytics Tab -->
+                                        <div class="tab-pane fade show active" id="driving" role="tabpanel">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">Driving Distance</h6>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Average:</span>
+                                                                <strong id="avg-drive-distance">245 yds</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Longest:</span>
+                                                                <strong id="longest-drive">285 yds</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">Swing Metrics</h6>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Clubhead Speed:</span>
+                                                                <strong id="clubhead-speed">105 mph</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Smash Factor:</span>
+                                                                <strong id="smash-factor">1.45</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Launch Angle:</span>
+                                                                <strong id="launch-angle">12.5°</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Approach Play Tab -->
+                                        <div class="tab-pane fade" id="approach" role="tabpanel">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        <h3 class="text-primary" id="approach-accuracy">65%</h3>
+                                                        <p>Approach Shots Hit Green</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        <h3 class="text-success" id="proximity-pin">25 ft</h3>
+                                                        <p>Avg Proximity to Pin</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        <h3 class="text-info" id="strokes-gained-approach">+0.5</h3>
+                                                        <p>Strokes Gained Approach</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <canvas id="iron-accuracy-chart" height="200"></canvas>
+                                            </div>
+                                        </div>
+
+                                        <!-- Short Game Tab -->
+                                        <div class="tab-pane fade" id="shortgame" role="tabpanel">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-warning" id="scrambling-pct">45%</h4>
+                                                        <p>Scrambling %</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-danger" id="sand-save-pct">35%</h4>
+                                                        <p>Sand Save %</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-primary" id="chip-proximity">8.5 ft</h4>
+                                                        <p>Chip Proximity</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-success" id="sg-short-game">-0.2</h4>
+                                                        <p>SG Short Game</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Putting Tab -->
+                                        <div class="tab-pane fade" id="putting" role="tabpanel">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6>Putting Performance</h6>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Putts per Round:</span>
+                                                                <strong id="putts-per-round">31.5</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>One Putt %:</span>
+                                                                <strong id="one-putt-pct">25%</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Three Putt %:</span>
+                                                                <strong id="three-putt-pct">8%</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6>Distance Performance</h6>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>3-6 feet:</span>
+                                                                <strong id="putting-3-6">85%</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>6-10 feet:</span>
+                                                                <strong id="putting-6-10">65%</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>10-15 feet:</span>
+                                                                <strong id="putting-10-15">35%</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <canvas id="putting-chart" height="200"></canvas>
+                                        </div>
+
+                                        <!-- Physical Performance Tab -->
+                                        <div class="tab-pane fade" id="physical" role="tabpanel">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <i class="fas fa-walking fa-2x text-primary mb-2"></i>
+                                                        <h4 id="walking-distance">5.2 mi</h4>
+                                                        <p>Walking Distance</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <i class="fas fa-shoe-prints fa-2x text-success mb-2"></i>
+                                                        <h4 id="total-steps">12,450</h4>
+                                                        <p>Total Steps</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <i class="fas fa-fire fa-2x text-danger mb-2"></i>
+                                                        <h4 id="calories-burned">1,180</h4>
+                                                        <p>Calories Burned</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <i class="fas fa-heartbeat fa-2x text-info mb-2"></i>
+                                                        <h4 id="avg-heart-rate">95 bpm</h4>
+                                                        <p>Avg Heart Rate</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-4">
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h5 id="pace-of-play">4.2 hours</h5>
+                                                            <p class="mb-0">Pace of Play</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6>Conditions</h6>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Weather:</span>
+                                                                <strong id="weather-conditions">Sunny</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Temperature:</span>
+                                                                <strong id="temperature">75°F</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Wind:</span>
+                                                                <strong id="wind-speed">8 mph</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Course Management Tab -->
+                                        <div class="tab-pane fade" id="course" role="tabpanel">
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        <h4 class="text-danger" id="penalty-strokes">1.5</h4>
+                                                        <p>Penalty Strokes/Round</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        <h4 class="text-primary" id="scoring-avg">84.2</h4>
+                                                        <p>Scoring Average (20 rounds)</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        <h4 class="text-success" id="handicap-trend">Improving</h4>
+                                                        <p>Handicap Trend</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6>Best Streaks</h6>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Consecutive Pars:</span>
+                                                                <strong id="best-par-streak">5</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Birdies in Round:</span>
+                                                                <strong id="best-birdie-streak">3</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6>Course Setup</h6>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Tee Box:</span>
+                                                                <strong id="tee-box">Blue</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Pin Positions:</span>
+                                                                <strong id="pin-positions">Middle</strong>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Course Rating:</span>
+                                                                <strong id="course-rating">72.1</strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Shot Analytics Charts -->
                     <div class="row mb-4">
                         <div class="col-md-6">
@@ -222,6 +532,12 @@
                                         {% if not player_data.player.prize_eligible %}
                                         <span class="badge bg-secondary ms-1">NE</span>
                                         {% endif %}
+                                        <br>
+                                        <small>
+                                            <a href="/player_analytics/{{ player_data.player.id }}" class="text-decoration-none">
+                                                <i class="fas fa-chart-line me-1"></i>View Full Analytics
+                                            </a>
+                                        </small>
                                     </td>
                                     <td>
                                         {% if player_data.par_score %}

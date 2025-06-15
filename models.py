@@ -255,7 +255,7 @@ class ArccosPlayerData(db.Model):
     last_sync = db.Column(db.DateTime, default=datetime.utcnow)
     sync_status = db.Column(db.String(20), default='connected')  # connected, syncing, error
     
-    # Performance metrics from latest round
+    # Basic Performance metrics from latest round
     avg_drive_distance = db.Column(db.Float, nullable=True)
     fairways_hit_percentage = db.Column(db.Float, nullable=True)
     greens_in_regulation_percentage = db.Column(db.Float, nullable=True)
@@ -265,6 +265,71 @@ class ArccosPlayerData(db.Model):
     strokes_gained_approach = db.Column(db.Float, nullable=True)
     strokes_gained_short_game = db.Column(db.Float, nullable=True)
     strokes_gained_putting = db.Column(db.Float, nullable=True)
+    
+    # Advanced Driving Analytics
+    driving_accuracy_percentage = db.Column(db.Float, nullable=True)  # % fairways hit
+    longest_drive = db.Column(db.Float, nullable=True)  # yards
+    avg_clubhead_speed = db.Column(db.Float, nullable=True)  # mph
+    avg_ball_speed = db.Column(db.Float, nullable=True)  # mph
+    avg_smash_factor = db.Column(db.Float, nullable=True)  # ball speed / clubhead speed
+    avg_launch_angle = db.Column(db.Float, nullable=True)  # degrees
+    avg_spin_rate = db.Column(db.Float, nullable=True)  # rpm
+    
+    # Iron Play Analytics
+    approach_shots_hit_green_percentage = db.Column(db.Float, nullable=True)
+    avg_proximity_to_pin = db.Column(db.Float, nullable=True)  # feet from pin on approach
+    longest_approach_shot = db.Column(db.Float, nullable=True)  # yards
+    
+    # Short Game Analytics
+    scrambling_percentage = db.Column(db.Float, nullable=True)  # up and down success rate
+    sand_save_percentage = db.Column(db.Float, nullable=True)
+    chip_shot_proximity = db.Column(db.Float, nullable=True)  # avg distance from pin after chip
+    pitch_shot_proximity = db.Column(db.Float, nullable=True)  # avg distance from pin after pitch
+    
+    # Putting Analytics
+    putts_per_round = db.Column(db.Float, nullable=True)
+    putts_per_gir = db.Column(db.Float, nullable=True)  # putts when green hit in regulation
+    one_putt_percentage = db.Column(db.Float, nullable=True)
+    three_putt_percentage = db.Column(db.Float, nullable=True)
+    avg_first_putt_distance = db.Column(db.Float, nullable=True)  # feet
+    longest_made_putt = db.Column(db.Float, nullable=True)  # feet
+    putting_from_3_6_feet_percentage = db.Column(db.Float, nullable=True)
+    putting_from_6_10_feet_percentage = db.Column(db.Float, nullable=True)
+    putting_from_10_15_feet_percentage = db.Column(db.Float, nullable=True)
+    putting_from_15_plus_feet_percentage = db.Column(db.Float, nullable=True)
+    
+    # Course Management & Mental Game
+    penalty_strokes_per_round = db.Column(db.Float, nullable=True)
+    water_hazard_penalties = db.Column(db.Float, nullable=True)
+    out_of_bounds_penalties = db.Column(db.Float, nullable=True)
+    course_difficulty_rating = db.Column(db.Float, nullable=True)  # Arccos course rating
+    weather_conditions = db.Column(db.String(100), nullable=True)  # sunny, windy, rain, etc.
+    temperature = db.Column(db.Float, nullable=True)  # fahrenheit
+    wind_speed = db.Column(db.Float, nullable=True)  # mph
+    
+    # Physical Performance (from Link Pro)
+    total_walking_distance = db.Column(db.Float, nullable=True)  # miles walked
+    total_steps = db.Column(db.Integer, nullable=True)
+    calories_burned = db.Column(db.Integer, nullable=True)
+    pace_of_play = db.Column(db.Float, nullable=True)  # hours for round
+    heart_rate_avg = db.Column(db.Float, nullable=True)  # bpm if connected to fitness tracker
+    
+    # Consistency Metrics
+    scoring_average = db.Column(db.Float, nullable=True)  # last 20 rounds
+    handicap_trend = db.Column(db.String(10), nullable=True)  # improving, stable, declining
+    best_streak_pars = db.Column(db.Integer, nullable=True)  # consecutive pars
+    best_streak_birdies = db.Column(db.Integer, nullable=True)  # birdies in a round
+    worst_hole_score = db.Column(db.Integer, nullable=True)
+    
+    # Club-by-Club Performance (JSON storage for detailed analysis)
+    club_distances = db.Column(db.Text, nullable=True)  # JSON: {"driver": 250, "3-wood": 220, etc.}
+    club_accuracy = db.Column(db.Text, nullable=True)  # JSON: accuracy percentage by club
+    club_usage_frequency = db.Column(db.Text, nullable=True)  # JSON: how often each club is used
+    
+    # Round Conditions & Context
+    course_name = db.Column(db.String(100), nullable=True)
+    tee_box_played = db.Column(db.String(20), nullable=True)  # championship, blue, white, red
+    pin_positions = db.Column(db.String(20), nullable=True)  # front, middle, back
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

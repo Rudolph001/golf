@@ -1018,8 +1018,11 @@ def sync_arccos_player(player_id):
         arccos_data.sync_status = 'syncing'
         arccos_data.last_sync = datetime.utcnow()
         
-        # Simulate data sync (in real implementation, this would call Arccos API)
+        # Simulate comprehensive data sync (in real implementation, this would call Arccos API)
         import random
+        import json
+        
+        # Basic Performance
         arccos_data.avg_drive_distance = random.randint(220, 280)
         arccos_data.fairways_hit_percentage = random.randint(40, 80)
         arccos_data.greens_in_regulation_percentage = random.randint(30, 70)
@@ -1029,6 +1032,133 @@ def sync_arccos_player(player_id):
         arccos_data.strokes_gained_approach = round(random.uniform(-1.0, 1.0), 1)
         arccos_data.strokes_gained_short_game = round(random.uniform(-1.0, 1.0), 1)
         arccos_data.strokes_gained_putting = round(random.uniform(-1.0, 1.0), 1)
+
+
+@app.route('/player_analytics/<int:player_id>')
+def player_analytics(player_id):
+    """Detailed Arccos analytics for a specific player"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return redirect(url_for('player_setup'))
+    
+    player = Player.query.get_or_404(player_id)
+    arccos_data = ArccosPlayerData.query.filter_by(
+        player_id=player_id, 
+        tournament_id=tournament.id
+    ).first()
+    
+    # Get club performance data
+    club_distances = {}
+    club_accuracy = {}
+    club_usage = {}
+    
+    if arccos_data:
+        import json
+        try:
+            club_distances = json.loads(arccos_data.club_distances) if arccos_data.club_distances else {}
+            club_accuracy = json.loads(arccos_data.club_accuracy) if arccos_data.club_accuracy else {}
+            club_usage = json.loads(arccos_data.club_usage_frequency) if arccos_data.club_usage_frequency else {}
+        except (json.JSONDecodeError, TypeError):
+            club_distances = {}
+            club_accuracy = {}
+            club_usage = {}
+    
+    return render_template('player_analytics.html',
+                         tournament=tournament,
+                         player=player,
+                         arccos_data=arccos_data,
+                         club_distances=club_distances,
+                         club_accuracy=club_accuracy,
+                         club_usage=club_usage)
+
+        
+        # Advanced Driving Analytics
+        arccos_data.driving_accuracy_percentage = random.randint(45, 85)
+        arccos_data.longest_drive = random.randint(280, 350)
+        arccos_data.avg_clubhead_speed = round(random.uniform(95, 115), 1)
+        arccos_data.avg_ball_speed = round(random.uniform(140, 170), 1)
+        arccos_data.avg_smash_factor = round(random.uniform(1.35, 1.50), 2)
+        arccos_data.avg_launch_angle = round(random.uniform(8, 15), 1)
+        arccos_data.avg_spin_rate = random.randint(2200, 3200)
+        
+        # Iron Play Analytics
+        arccos_data.approach_shots_hit_green_percentage = random.randint(35, 75)
+        arccos_data.avg_proximity_to_pin = round(random.uniform(15, 45), 1)
+        arccos_data.longest_approach_shot = random.randint(180, 220)
+        
+        # Short Game Analytics
+        arccos_data.scrambling_percentage = random.randint(25, 70)
+        arccos_data.sand_save_percentage = random.randint(20, 60)
+        arccos_data.chip_shot_proximity = round(random.uniform(4, 12), 1)
+        arccos_data.pitch_shot_proximity = round(random.uniform(6, 18), 1)
+        
+        # Putting Analytics
+        arccos_data.putts_per_round = round(random.uniform(28, 36), 1)
+        arccos_data.putts_per_gir = round(random.uniform(1.6, 2.2), 1)
+        arccos_data.one_putt_percentage = random.randint(15, 35)
+        arccos_data.three_putt_percentage = random.randint(3, 15)
+        arccos_data.avg_first_putt_distance = round(random.uniform(20, 40), 1)
+        arccos_data.longest_made_putt = random.randint(25, 65)
+        arccos_data.putting_from_3_6_feet_percentage = random.randint(75, 95)
+        arccos_data.putting_from_6_10_feet_percentage = random.randint(50, 75)
+        arccos_data.putting_from_10_15_feet_percentage = random.randint(25, 50)
+        arccos_data.putting_from_15_plus_feet_percentage = random.randint(5, 25)
+        
+        # Course Management
+        arccos_data.penalty_strokes_per_round = round(random.uniform(0.5, 3.0), 1)
+        arccos_data.water_hazard_penalties = round(random.uniform(0, 1.5), 1)
+        arccos_data.out_of_bounds_penalties = round(random.uniform(0, 1.0), 1)
+        arccos_data.course_difficulty_rating = round(random.uniform(68, 75), 1)
+        weather_options = ['Sunny', 'Partly Cloudy', 'Windy', 'Light Rain', 'Overcast']
+        arccos_data.weather_conditions = random.choice(weather_options)
+        arccos_data.temperature = random.randint(55, 85)
+        arccos_data.wind_speed = random.randint(0, 20)
+        
+        # Physical Performance
+        arccos_data.total_walking_distance = round(random.uniform(4.5, 6.2), 1)
+        arccos_data.total_steps = random.randint(8000, 15000)
+        arccos_data.calories_burned = random.randint(800, 1500)
+        arccos_data.pace_of_play = round(random.uniform(3.5, 5.0), 1)
+        arccos_data.heart_rate_avg = random.randint(85, 120)
+        
+        # Consistency Metrics
+        arccos_data.scoring_average = round(random.uniform(75, 95), 1)
+        trend_options = ['Improving', 'Stable', 'Declining']
+        arccos_data.handicap_trend = random.choice(trend_options)
+        arccos_data.best_streak_pars = random.randint(3, 8)
+        arccos_data.best_streak_birdies = random.randint(2, 5)
+        arccos_data.worst_hole_score = random.randint(6, 10)
+        
+        # Club Performance Data (JSON)
+        club_distances = {
+            "Driver": random.randint(240, 280),
+            "3-Wood": random.randint(210, 250),
+            "5-Wood": random.randint(190, 230),
+            "3-Iron": random.randint(180, 210),
+            "4-Iron": random.randint(170, 200),
+            "5-Iron": random.randint(160, 190),
+            "6-Iron": random.randint(150, 180),
+            "7-Iron": random.randint(140, 170),
+            "8-Iron": random.randint(130, 160),
+            "9-Iron": random.randint(120, 150),
+            "PW": random.randint(110, 140),
+            "SW": random.randint(80, 110),
+            "LW": random.randint(60, 90)
+        }
+        arccos_data.club_distances = json.dumps(club_distances)
+        
+        club_accuracy = {club: random.randint(60, 90) for club in club_distances.keys()}
+        arccos_data.club_accuracy = json.dumps(club_accuracy)
+        
+        club_usage = {club: random.randint(5, 20) for club in club_distances.keys()}
+        arccos_data.club_usage_frequency = json.dumps(club_usage)
+        
+        # Course Context
+        arccos_data.course_name = "Pinaclepoint Golf Estate"
+        tee_options = ['Championship', 'Blue', 'White', 'Red']
+        arccos_data.tee_box_played = random.choice(tee_options)
+        pin_options = ['Front', 'Middle', 'Back']
+        arccos_data.pin_positions = random.choice(pin_options)
         
         arccos_data.sync_status = 'connected'
         db.session.commit()
