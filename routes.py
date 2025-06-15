@@ -75,25 +75,25 @@ def get_prize_distribution(player_count):
         'main_prizes': prizes,
         'daily_special_prizes': {
             'day_1': {
-                'longest_drive': 10000, 
-                'closest_hole': 10000, 
-                'most_birdies': 10000,
-                'straightest_drive': 10000,
-                'most_pars': 10000
+                'most_pars_front': 30000, 
+                'most_pars_back': 30000, 
+                'beat_handicap': 30000,
+                'straightest_drive': 30000,
+                'most_pars': 30000
             },
             'day_2': {
-                'longest_drive': 10000, 
-                'closest_hole': 10000, 
-                'most_birdies': 10000,
-                'straightest_drive': 10000,
-                'most_pars': 10000
+                'most_pars_front': 30000, 
+                'most_pars_back': 30000, 
+                'beat_handicap': 30000,
+                'straightest_drive': 30000,
+                'most_pars': 30000
             },
             'day_3': {
-                'longest_drive': 10000, 
-                'closest_hole': 10000, 
-                'most_birdies': 10000,
-                'straightest_drive': 10000,
-                'most_pars': 10000
+                'most_pars_front': 30000, 
+                'most_pars_back': 30000, 
+                'beat_handicap': 30000,
+                'straightest_drive': 30000,
+                'most_pars': 30000
             }
         }
     }
@@ -273,6 +273,12 @@ def update_score():
     score.updated_at = datetime.utcnow()
     
     db.session.commit()
+    
+    # Automatically recalculate and award daily special prizes for this round's day
+    tournament_id = score.round.tournament_id
+    day = score.round.day
+    auto_award_daily_special_prizes(tournament_id, day)
+    
     flash('Scorecard updated successfully!', 'success')
     
     return redirect(url_for('scorecard', player_id=score.player_id, round_id=score.round_id))
@@ -540,6 +546,28 @@ def toggle_prize_eligibility():
     
     return redirect(url_for('admin'))
 
+def auto_award_daily_special_prizes(tournament_id, day):
+    """Automatically calculate and award daily special prizes for a specific day"""
+    # Calculate winners based on current scores
+    winners = calculate_daily_special_prizes(tournament_id, day)
+    
+    # Clear existing special prizes for this day
+    SpecialPrize.query.filter_by(tournament_id=tournament_id, day=day).delete()
+    
+    # Award new special prizes
+    for prize_type, player_ids in winners.items():
+        for player_id in player_ids:
+            special_prize = SpecialPrize(
+                tournament_id=tournament_id,
+                day=day,
+                prize_type=prize_type,
+                player_id=player_id,
+                amount=30000
+            )
+            db.session.add(special_prize)
+    
+    db.session.commit()
+
 def calculate_daily_special_prizes(tournament_id, day):
     """Calculate who wins daily special prizes automatically based on performance - only eligible players"""
     from collections import defaultdict
@@ -558,35 +586,73 @@ def calculate_daily_special_prizes(tournament_id, day):
     
     winners = {}
     
-    # 1. Longest Drive - lowest total strokes (best overall performance proxy)
-    longest_drive_winner = min(scores_with_data, key=lambda x: x.total_strokes)
-    winners['longest_drive'] = [longest_drive_winner.player_id]
+    # 1. Most Pars Front 9 (holes 1-9) - count pars on front 9
+    front_nine_pars = defaultdict(int)
+    for score in scores_with_data:
+        par_count = 0
+        for hole in range(1, 10):  # holes 1-9
+            hole_score = score.get_hole_score(hole)
+            if hole_score == 4:  # assuming par 4 for simplicity, could be made more sophisticated
+                par_count += 1
+        front_nine_pars[score.player_id] = par_count
     
-    # 2. Most Birdies - highest stableford points
-    if scores_with_data[0].stableford_points is not None:
-        max_points = max(scores_with_data, key=lambda x: x.stableford_points or 0).stableford_points or 0
-        most_birdies_winners = [s.player_id for s in scores_with_data if (s.stableford_points or 0) == max_points]
-        winners['most_birdies'] = most_birdies_winners
+    if front_nine_pars:
+        max_front_pars = max(front_nine_pars.values())
+        winners['most_pars_front'] = [pid for pid, count in front_nine_pars.items() if count == max_front_pars]
     else:
-        winners['most_birdies'] = []
+        winners['most_pars_front'] = []
     
-    # 3. Closest to Hole - second best score
+    # 2. Most Pars Back 9 (holes 10-18) - count pars on back 9
+    back_nine_pars = defaultdict(int)
+    for score in scores_with_data:
+        par_count = 0
+        for hole in range(10, 19):  # holes 10-18
+            hole_score = score.get_hole_score(hole)
+            if hole_score == 4:  # assuming par 4 for simplicity
+                par_count += 1
+        back_nine_pars[score.player_id] = par_count
+    
+    if back_nine_pars:
+        max_back_pars = max(back_nine_pars.values())
+        winners['most_pars_back'] = [pid for pid, count in back_nine_pars.items() if count == max_back_pars]
+    else:
+        winners['most_pars_back'] = []
+    
+    # 3. Beat Handicap - player who performed best relative to their handicap
+    handicap_performance = []
+    for score in scores_with_data:
+        player = score.player
+        net_score = score.get_net_score()  # handicap-adjusted score
+        expected_score = 72 + player.handicap  # par + handicap
+        performance = expected_score - net_score  # positive means beat handicap
+        handicap_performance.append((score.player_id, performance))
+    
+    if handicap_performance:
+        best_performance = max(handicap_performance, key=lambda x: x[1])[1]
+        winners['beat_handicap'] = [pid for pid, perf in handicap_performance if perf == best_performance]
+    else:
+        winners['beat_handicap'] = []
+    
+    # 4. Straightest Drive - third best overall score
     sorted_scores = sorted(scores_with_data, key=lambda x: x.total_strokes)
-    if len(sorted_scores) >= 2:
-        winners['closest_hole'] = [sorted_scores[1].player_id]
-    else:
-        winners['closest_hole'] = []
-    
-    # 4. Straightest Drive - third best score (if exists)
     if len(sorted_scores) >= 3:
         winners['straightest_drive'] = [sorted_scores[2].player_id]
     else:
         winners['straightest_drive'] = []
     
-    # 5. Most Pars - middle performer (median score)
-    if len(sorted_scores) >= 1:
-        median_index = len(sorted_scores) // 2
-        winners['most_pars'] = [sorted_scores[median_index].player_id]
+    # 5. Most Pars Overall - player with most pars across all 18 holes
+    total_pars = defaultdict(int)
+    for score in scores_with_data:
+        par_count = 0
+        for hole in range(1, 19):  # holes 1-18
+            hole_score = score.get_hole_score(hole)
+            if hole_score == 4:  # assuming par 4 for simplicity
+                par_count += 1
+        total_pars[score.player_id] = par_count
+    
+    if total_pars:
+        max_total_pars = max(total_pars.values())
+        winners['most_pars'] = [pid for pid, count in total_pars.items() if count == max_total_pars]
     else:
         winners['most_pars'] = []
     
