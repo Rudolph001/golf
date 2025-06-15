@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db
-from models import Tournament, Player, Round, Score, SpecialPrize, HandicapPlayer, HandicapRound, PINACLEPOINT_COURSE
+from models import Tournament, Player, Round, Score, SpecialPrize, HandicapPlayer, HandicapRound, ArccosPlayerData, ArccosRoundData, PINACLEPOINT_COURSE
 from datetime import datetime, date
 from sqlalchemy import func
 
