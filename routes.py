@@ -541,7 +541,7 @@ def toggle_prize_eligibility():
     return redirect(url_for('admin'))
 
 def calculate_daily_special_prizes(tournament_id, day):
-    """Calculate who wins daily special prizes automatically based on performance"""
+    """Calculate who wins daily special prizes automatically based on performance - only eligible players"""
     from collections import defaultdict
     
     # Get the round for this day
@@ -549,8 +549,8 @@ def calculate_daily_special_prizes(tournament_id, day):
     if not round_obj:
         return {}
     
-    # Get all scores for this day
-    scores = Score.query.filter_by(round_id=round_obj.id).all()
+    # Get all scores for this day, but only for prize-eligible players
+    scores = Score.query.filter_by(round_id=round_obj.id).join(Player).filter(Player.prize_eligible == True).all()
     scores_with_data = [s for s in scores if s.total_strokes and s.total_strokes > 0]
     
     if not scores_with_data:
