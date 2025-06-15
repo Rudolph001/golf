@@ -1214,6 +1214,11 @@ def disconnect_arccos_player(player_id):
     
     return redirect(url_for('arccos_dashboard'))
 
+@app.route('/course_info')
+def course_info():
+    """Course information page with hole details and images"""
+    return render_template('course_info.html', course=PINACLEPOINT_COURSE)
+
 @app.route('/handicap_dashboard')
 def handicap_dashboard():
     """Handicap calculation dashboard"""
