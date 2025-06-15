@@ -66,7 +66,7 @@
                     <button class="btn btn-primary btn-block mb-2" onclick="syncAllPlayers()">
                         <i class="fas fa-sync-alt me-2"></i>Sync All Players
                     </button>
-                    <button class="btn btn-success btn-block mb-2" onclick="autoPopulateAllScorecards()">
+                    <button class="btn btn-success btn-block mb-2" onclick="autoFillAllScorecards()">
                         <i class="fas fa-clipboard-list me-2"></i>Auto-Fill Scorecards
                     </button>
                     <button class="btn btn-outline-info btn-block" onclick="exportArccosData()">
@@ -651,6 +651,41 @@ function updatePlayerLeaderboardData(playerId, data) {
     if (girCell) girCell.textContent = data.greens_in_regulation_percentage + '%';
     if (puttsCell) puttsCell.textContent = data.average_putts_per_hole;
     if (strokesGainedCell) strokesGainedCell.textContent = data.strokes_gained_total;
+}
+
+function autoFillAllScorecards() {
+    if (!confirm('This will auto-fill all daily scorecards with shot data for Arccos connected players. This will overwrite any existing scores. Continue?')) {
+        return;
+    }
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Auto-Filling...';
+    
+    fetch('/auto_fill_all_scorecards', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Success: ${data.message}`);
+            // Redirect to main tournament view to see updated scorecards
+            window.location.href = '/';
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        alert('Auto-fill failed. Please try again.');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
 }
 
 function exportArccosData() {

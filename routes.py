@@ -1053,12 +1053,13 @@ def sync_all_arccos_data():
         return jsonify({'error': 'No tournament found'}), 400
     
     try:
-        result = sync_arccos_data_for_tournament(tournament.id)
+        # Use the enhanced scorecard population system
+        result = auto_populate_all_player_scorecards(tournament.id)
         
         return jsonify({
             'success': True,
             'total_players_synced': len(result['success']),
-            'total_rounds_synced': result['total_rounds_synced'],
+            'total_rounds_synced': result['total_rounds_populated'],
             'players_synced': result['success'],
             'errors': result['errors']
         })
@@ -1107,20 +1108,46 @@ def auto_populate_scorecard(player_id, round_id):
         if not arccos_data:
             return jsonify({'error': 'Player not connected to Arccos'}), 400
         
-        # Sync data for this specific round
-        result = sync_player_arccos_data(arccos_data)
+        # Use enhanced scorecard population for single player
+        result = auto_populate_player_scorecards(player_id, round_obj.tournament_id)
         
         if result['success']:
             return jsonify({
                 'success': True,
-                'message': f'Scorecard populated with Arccos data for {player.name}',
-                'rounds_synced': result['rounds_synced']
+                'message': f'Scorecard populated with shot data for {player.name}',
+                'rounds_populated': result['rounds_populated']
             })
         else:
             return jsonify({'error': result['error']}), 400
             
     except Exception as e:
         return jsonify({'error': f'Failed to populate scorecard: {str(e)}'}), 500
+
+@app.route('/auto_fill_all_scorecards', methods=['POST'])
+def auto_fill_all_scorecards():
+    """Auto-fill all scorecards for Arccos connected players"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        return jsonify({'error': 'No tournament found'}), 400
+    
+    try:
+        # Use the enhanced scorecard population system
+        result = auto_populate_all_player_scorecards(tournament.id)
+        
+        success_count = len(result['success'])
+        total_rounds = result['total_rounds_populated']
+        
+        return jsonify({
+            'success': True,
+            'message': f'Auto-filled scorecards for {success_count} players across {total_rounds} rounds',
+            'total_players_filled': success_count,
+            'total_rounds_filled': total_rounds,
+            'players_filled': result['success'],
+            'errors': result['errors']
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Auto-fill failed: {str(e)}'}), 500
 
 @app.route('/disconnect_arccos_player/<int:player_id>', methods=['POST'])
 def disconnect_arccos_player(player_id):
