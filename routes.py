@@ -540,6 +540,58 @@ def toggle_prize_eligibility():
     
     return redirect(url_for('admin'))
 
+def calculate_daily_special_prizes(tournament_id, day):
+    """Calculate who wins daily special prizes automatically based on performance"""
+    from collections import defaultdict
+    
+    # Get the round for this day
+    round_obj = Round.query.filter_by(tournament_id=tournament_id, day=day).first()
+    if not round_obj:
+        return {}
+    
+    # Get all scores for this day
+    scores = Score.query.filter_by(round_id=round_obj.id).all()
+    scores_with_data = [s for s in scores if s.total_strokes and s.total_strokes > 0]
+    
+    if not scores_with_data:
+        return {}
+    
+    winners = {}
+    
+    # 1. Longest Drive - lowest total strokes (best overall performance proxy)
+    longest_drive_winner = min(scores_with_data, key=lambda x: x.total_strokes)
+    winners['longest_drive'] = [longest_drive_winner.player_id]
+    
+    # 2. Most Birdies - highest stableford points
+    if scores_with_data[0].stableford_points is not None:
+        max_points = max(scores_with_data, key=lambda x: x.stableford_points or 0).stableford_points or 0
+        most_birdies_winners = [s.player_id for s in scores_with_data if (s.stableford_points or 0) == max_points]
+        winners['most_birdies'] = most_birdies_winners
+    else:
+        winners['most_birdies'] = []
+    
+    # 3. Closest to Hole - second best score
+    sorted_scores = sorted(scores_with_data, key=lambda x: x.total_strokes)
+    if len(sorted_scores) >= 2:
+        winners['closest_hole'] = [sorted_scores[1].player_id]
+    else:
+        winners['closest_hole'] = []
+    
+    # 4. Straightest Drive - third best score (if exists)
+    if len(sorted_scores) >= 3:
+        winners['straightest_drive'] = [sorted_scores[2].player_id]
+    else:
+        winners['straightest_drive'] = []
+    
+    # 5. Most Pars - middle performer (median score)
+    if len(sorted_scores) >= 1:
+        median_index = len(sorted_scores) // 2
+        winners['most_pars'] = [sorted_scores[median_index].player_id]
+    else:
+        winners['most_pars'] = []
+    
+    return winners
+
 def calculate_leaderboard(tournament_id):
     """Calculate tournament leaderboard with cumulative scores and net scoring"""
     players = Player.query.filter_by(tournament_id=tournament_id).all()
@@ -602,16 +654,38 @@ def calculate_leaderboard(tournament_id):
             player_data['net_score'] = None
             player_data['par_score'] = None
         
-        # Calculate special prizes won by this player
+        # Calculate special prizes won by this player (both manual and automatic)
+        special_prizes_total = 0
+        special_prizes_detail = []
+        
         try:
-            special_prizes = SpecialPrize.query.filter_by(
+            # Manual special prizes from database
+            manual_special_prizes = SpecialPrize.query.filter_by(
                 tournament_id=tournament_id, 
                 player_id=player.id
             ).all()
-            player_data['special_prizes_won'] = len(special_prizes) * 10000  # R10,000 per special prize
+            for prize in manual_special_prizes:
+                special_prizes_total += 10000  # R10,000 per manual special prize
+                special_prizes_detail.append(f"Day {prize.day} {prize.prize_type.replace('_', ' ').title()}")
         except Exception:
             # Handle case where day column doesn't exist yet
-            player_data['special_prizes_won'] = 0
+            pass
+        
+        # Automatic special prizes based on performance
+        for day in [1, 2, 3]:
+            daily_winners = calculate_daily_special_prizes(tournament_id, day)
+            for prize_type, winner_ids in daily_winners.items():
+                if player.id in winner_ids and len(winner_ids) > 0:
+                    # Split prize money among tied winners
+                    prize_amount = 10000 // len(winner_ids)  # R10,000 split among winners
+                    special_prizes_total += prize_amount
+                    if len(winner_ids) > 1:
+                        special_prizes_detail.append(f"Day {day} {prize_type.replace('_', ' ').title()} (Split {len(winner_ids)} ways)")
+                    else:
+                        special_prizes_detail.append(f"Day {day} {prize_type.replace('_', ' ').title()}")
+        
+        player_data['special_prizes_won'] = special_prizes_total
+        player_data['special_prizes_detail'] = special_prizes_detail
         
         leaderboard.append(player_data)
     

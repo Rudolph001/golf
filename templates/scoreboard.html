@@ -74,6 +74,9 @@
                                     <th class="text-center py-2">GROSS</th>
                                     <th class="text-center py-2">NET</th>
                                     <th class="text-center py-2">PAR</th>
+                                    <th class="text-center">Main Prize</th>
+                                    <th class="text-center">Special Prizes</th>
+                                    <th class="text-center">Total Winnings</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -145,6 +148,23 @@
                                         {% else %}
                                             <span class="text-muted">-</span>
                                         {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <strong class="{% if player_data.prize > 0 %}text-success{% else %}text-muted{% endif %}">
+                                            R{{ "{:,}".format(player_data.prize) }}
+                                        </strong>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if player_data.special_prizes_won > 0 %}
+                                        <strong class="text-warning">R{{ "{:,}".format(player_data.special_prizes_won) }}</strong>
+                                        {% else %}
+                                        <span class="text-muted">R0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <strong class="{% if player_data.total_winnings > 0 %}text-success{% else %}text-muted{% endif %}">
+                                            R{{ "{:,}".format(player_data.total_winnings) }}
+                                        </strong>
                                     </td>
                                 </tr>
                                 {% endfor %}

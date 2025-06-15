@@ -281,6 +281,59 @@
             </div>
         </div>
     </div>
+
+    <!-- Special Prizes Winners Breakdown -->
+    {% for day in [1, 2, 3] %}
+    {% set daily_winners = [] %}
+    {% for player_data in leaderboard %}
+        {% for detail in player_data.special_prizes_detail %}
+            {% if detail.startswith('Day ' ~ day) %}
+                {% set _ = daily_winners.append({'player': player_data.player.name, 'prize': detail}) %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+    {% if daily_winners %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Day {{ day }} Special Prize Winners
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for winner in daily_winners %}
+                        <div class="col-md-6 mb-2">
+                            <div class="alert alert-success mb-2">
+                                <strong>{{ winner.player }}</strong> - {{ winner.prize.split(' ', 2)[2] }}
+                                <span class="badge bg-success ms-2">R10,000</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- Navigation -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-lg me-3">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Admin Panel
+            </a>
+            <a href="{{ url_for('scoreboard') }}" class="btn btn-success btn-lg">
+                <i class="fas fa-trophy me-2"></i>
+                View Scoreboard
+            </a>
+        </div>
+    </div>
 </div>
 
 <!-- Auto-refresh for live updates -->
