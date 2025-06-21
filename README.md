@@ -55,39 +55,31 @@ The app will be available at `http://localhost:5000`
 
 ## Android App Development
 
-### Capacitor Setup
+See [ANDROID_SETUP.md](./ANDROID_SETUP.md) for complete step-by-step instructions to build the native Android app.
 
-1. Install Capacitor:
+### Quick Start
+
+1. Install Capacitor dependencies:
    ```bash
-   npm install @capacitor/core @capacitor/cli @capacitor/android
+   npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/geolocation
    ```
 
-2. Initialize Capacitor:
-   ```bash
-   npx cap init
-   ```
-
-3. Add Android platform:
-   ```bash
-   npx cap add android
-   ```
-
-4. Add required permissions to `android/app/src/main/AndroidManifest.xml`:
-   ```xml
-   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-   <uses-permission android:name="android.permission.INTERNET" />
-   <uses-permission android:name="android.permission.CAMERA" />
-   <uses-permission android:name="android.permission.VIBRATE" />
-   ```
-
-5. Build and sync:
+2. Build and setup Android:
    ```bash
    npm run build
-   npx cap sync
+   npx cap add android
+   npx cap sync android
    npx cap open android
    ```
+
+3. Add permissions from `android-permissions.xml` to your AndroidManifest.xml
+
+### Key Features for Mobile
+- Native GPS permission handling
+- Background location tracking
+- Offline data synchronization
+- Push notifications ready
+- Optimized for golf course environments
 
 ## PWA Features
 

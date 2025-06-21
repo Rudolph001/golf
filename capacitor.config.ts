@@ -11,7 +11,8 @@ const config: CapacitorConfig = {
     Geolocation: {
       permissions: {
         location: "always"
-      }
+      },
+      enableHighAccuracy: true
     },
     Camera: {
       permissions: {

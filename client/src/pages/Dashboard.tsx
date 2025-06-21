@@ -3,11 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlayCircle, BarChart2, MapPin, CloudSun } from "lucide-react";
 import useLocationWeather from "@/lib/useLocationWeather";
+import LocationPermissionPrompt from "@/components/LocationPermissionPrompt";
 import { Round, Course } from "@shared/schema";
 import { Link } from "wouter";
 
 export default function Dashboard() {
   const { coordinates, weather, error, loading } = useLocationWeather();
+  
+  const handlePermissionGranted = () => {
+    // Refresh the page to retry location/weather fetch
+    window.location.reload();
+  };
   
   const { data: currentRound } = useQuery<Round | null>({
     queryKey: ['/api/rounds/current?userId=1'],
@@ -25,6 +31,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Location Permission Prompt */}
+      {error && error.includes('Location') && (
+        <LocationPermissionPrompt onPermissionGranted={handlePermissionGranted} />
+      )}
       {/* Header with course background */}
       <div 
         className="relative h-48 bg-golf-gradient"
