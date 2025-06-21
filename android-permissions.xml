@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android Permissions for Golf Tracking PWA -->
+<!-- Add these permissions to your AndroidManifest.xml when building with Capacitor -->
+
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+<uses-permission android:name="android.permission.INTERNET" />
+
+<!-- Additional permissions that may be useful for golf tracking -->
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.VIBRATE" />
+
+<!-- 
+Usage in Capacitor project:
+1. Create Android project: npx cap add android
+2. Add these permissions to android/app/src/main/AndroidManifest.xml
+3. Build: npx cap build android
+4. Open Android Studio: npx cap open android
+-->

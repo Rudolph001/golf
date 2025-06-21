@@ -105,7 +105,8 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
+      handicap: insertUser.handicap || null,
       id,
       createdAt: new Date()
     };
@@ -143,7 +144,13 @@ export class MemStorage implements IStorage {
   async createCourse(insertCourse: InsertCourse): Promise<Course> {
     const id = this.currentCourseId++;
     const course: Course = { 
-      ...insertCourse, 
+      ...insertCourse,
+      slope: insertCourse.slope || null,
+      rating: insertCourse.rating || null,
+      holes: insertCourse.holes || 18,
+      greenFee: insertCourse.greenFee || null,
+      latitude: insertCourse.latitude || null,
+      longitude: insertCourse.longitude || null,
       id,
       createdAt: new Date()
     };
@@ -163,7 +170,13 @@ export class MemStorage implements IStorage {
   async createRound(insertRound: InsertRound): Promise<Round> {
     const id = this.currentRoundId++;
     const round: Round = { 
-      ...insertRound, 
+      ...insertRound,
+      userId: insertRound.userId || null,
+      courseId: insertRound.courseId || null,
+      totalScore: insertRound.totalScore || null,
+      completed: insertRound.completed || null,
+      weather: insertRound.weather || null,
+      currentHole: insertRound.currentHole || null,
       id,
       date: new Date(),
       createdAt: new Date()
@@ -195,7 +208,12 @@ export class MemStorage implements IStorage {
   async createShot(insertShot: InsertShot): Promise<Shot> {
     const id = this.currentShotId++;
     const shot: Shot = { 
-      ...insertShot, 
+      ...insertShot,
+      roundId: insertShot.roundId || null,
+      score: insertShot.score || null,
+      club: insertShot.club || null,
+      result: insertShot.result || null,
+      distance: insertShot.distance || null,
       id,
       createdAt: new Date()
     };
