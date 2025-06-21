@@ -21,31 +21,40 @@ export default function LocationPermissionPrompt({ onPermissionGranted }: Locati
         const CapacitorGeolocation = (window as any).Capacitor?.Plugins?.Geolocation;
         if (CapacitorGeolocation) {
           const result = await CapacitorGeolocation.requestPermissions();
-          if (result.location === 'granted') {
-            onPermissionGranted();
-          } else {
-            console.error('Location permission denied');
-            setRequesting(false);
-          }
+          console.log('Native permission result:', result);
+          // Always dismiss the modal regardless of result
+          onPermissionGranted();
         } else {
           console.error('Capacitor Geolocation not available');
-          setRequesting(false);
+          onPermissionGranted();
         }
       } else {
         // For web/PWA, request location permission
         if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              console.log('Location permission granted:', position);
-              onPermissionGranted();
-            },
-            (error) => {
-              console.error('Location permission error:', error);
-              // Still call the callback to dismiss the modal
-              onPermissionGranted();
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-          );
+          // Use a promise-based approach for better handling
+          const requestLocation = () => {
+            return new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(
+                (position) => resolve(position),
+                (error) => reject(error),
+                { 
+                  enableHighAccuracy: true, 
+                  timeout: 8000, 
+                  maximumAge: 300000 
+                }
+              );
+            });
+          };
+
+          try {
+            const position = await requestLocation();
+            console.log('Location permission granted:', position);
+          } catch (error) {
+            console.log('Location permission denied or failed:', error);
+          }
+          
+          // Always dismiss the modal after attempt
+          onPermissionGranted();
         } else {
           console.error('Geolocation not supported');
           onPermissionGranted();
@@ -53,7 +62,9 @@ export default function LocationPermissionPrompt({ onPermissionGranted }: Locati
       }
     } catch (error) {
       console.error('Permission request error:', error);
-      onPermissionGranted(); // Dismiss modal even on error
+      onPermissionGranted();
+    } finally {
+      setRequesting(false);
     }
   };
 

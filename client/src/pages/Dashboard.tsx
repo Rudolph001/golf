@@ -11,10 +11,9 @@ export default function Dashboard() {
   const { coordinates, weather, error, loading } = useLocationWeather();
 
   const handlePermissionGranted = () => {
-    // Force a page refresh to retry location/weather fetch after permission granted
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    // Simply hide the prompt and let the hook retry naturally
+    // Don't force a reload which can cause issues
+    console.log('Permission prompt dismissed');
   };
 
   const { data: currentRound } = useQuery<Round | null>({
@@ -34,7 +33,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Location Permission Prompt */}
-      {error && error.includes('Location') && (
+      {error && error.includes('permission') && !coordinates && (
         <LocationPermissionPrompt onPermissionGranted={handlePermissionGranted} />
       )}
       {/* Header with course background */}

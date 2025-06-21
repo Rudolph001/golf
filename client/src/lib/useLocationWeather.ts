@@ -86,41 +86,61 @@ export default function useLocationWeather(): LocationWeatherResult {
             return;
           }
 
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const coords = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-              };
-              setCoordinates(coords);
-              await fetchWeather(coords);
-              setLoading(false);
-            },
-            (geoError) => {
-              console.error('Geolocation error:', geoError);
-              let errorMessage = 'Location access denied';
-              
+          // Use a more robust approach with timeout handling
+          const locationPromise = new Promise<GeolocationPosition>((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+              reject(new Error('Location request timed out'));
+            }, 10000);
+
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                clearTimeout(timeoutId);
+                resolve(position);
+              },
+              (geoError) => {
+                clearTimeout(timeoutId);
+                reject(geoError);
+              },
+              {
+                enableHighAccuracy: true,
+                timeout: 8000,
+                maximumAge: 300000
+              }
+            );
+          });
+
+          try {
+            const position = await locationPromise;
+            const coords = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            };
+            setCoordinates(coords);
+            await fetchWeather(coords);
+          } catch (geoError: any) {
+            console.error('Geolocation error:', geoError);
+            let errorMessage = 'Location access denied';
+            
+            if (geoError.code) {
               switch (geoError.code) {
-                case geoError.PERMISSION_DENIED:
+                case 1: // PERMISSION_DENIED
                   errorMessage = 'Location permission denied';
                   break;
-                case geoError.POSITION_UNAVAILABLE:
+                case 2: // POSITION_UNAVAILABLE
                   errorMessage = 'Location information unavailable';
                   break;
-                case geoError.TIMEOUT:
+                case 3: // TIMEOUT
                   errorMessage = 'Location request timed out';
                   break;
               }
-              
-              setError(errorMessage);
-              setLoading(false);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 15000,
-              maximumAge: 300000 // 5 minutes
+            } else if (geoError.message) {
+              errorMessage = geoError.message;
             }
-          );
+            
+            setError(errorMessage);
+          } finally {
+            setLoading(false);
+          }
         }
       } catch (error) {
         setError(`Location setup error: ${error instanceof Error ? error.message : 'Unknown error'}`);
