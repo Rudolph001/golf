@@ -23,26 +23,37 @@ export default function LocationPermissionPrompt({ onPermissionGranted }: Locati
           const result = await CapacitorGeolocation.requestPermissions();
           if (result.location === 'granted') {
             onPermissionGranted();
+          } else {
+            console.error('Location permission denied');
+            setRequesting(false);
           }
+        } else {
+          console.error('Capacitor Geolocation not available');
+          setRequesting(false);
         }
       } else {
         // For web/PWA, request location permission
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            () => {
+            (position) => {
+              console.log('Location permission granted:', position);
               onPermissionGranted();
             },
             (error) => {
               console.error('Location permission error:', error);
+              // Still call the callback to dismiss the modal
+              onPermissionGranted();
             },
-            { enableHighAccuracy: true, timeout: 5000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
           );
+        } else {
+          console.error('Geolocation not supported');
+          onPermissionGranted();
         }
       }
     } catch (error) {
       console.error('Permission request error:', error);
-    } finally {
-      setRequesting(false);
+      onPermissionGranted(); // Dismiss modal even on error
     }
   };
 

@@ -97,12 +97,27 @@ export default function useLocationWeather(): LocationWeatherResult {
               setLoading(false);
             },
             (geoError) => {
-              setError(`Location error: ${geoError.message}`);
+              console.error('Geolocation error:', geoError);
+              let errorMessage = 'Location access denied';
+              
+              switch (geoError.code) {
+                case geoError.PERMISSION_DENIED:
+                  errorMessage = 'Location permission denied';
+                  break;
+                case geoError.POSITION_UNAVAILABLE:
+                  errorMessage = 'Location information unavailable';
+                  break;
+                case geoError.TIMEOUT:
+                  errorMessage = 'Location request timed out';
+                  break;
+              }
+              
+              setError(errorMessage);
               setLoading(false);
             },
             {
               enableHighAccuracy: true,
-              timeout: 10000,
+              timeout: 15000,
               maximumAge: 300000 // 5 minutes
             }
           );

@@ -9,12 +9,14 @@ import { Link } from "wouter";
 
 export default function Dashboard() {
   const { coordinates, weather, error, loading } = useLocationWeather();
-  
+
   const handlePermissionGranted = () => {
-    // Refresh the page to retry location/weather fetch
-    window.location.reload();
+    // Force a page refresh to retry location/weather fetch after permission granted
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
-  
+
   const { data: currentRound } = useQuery<Round | null>({
     queryKey: ['/api/rounds/current?userId=1'],
   });
@@ -71,7 +73,7 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-          
+
           {/* Current Round Status */}
           <div className="glass-effect rounded-xl p-4 mt-8">
             <div className="flex justify-between items-center">
@@ -146,7 +148,7 @@ export default function Dashboard() {
               </div>
             </Button>
           </Link>
-          
+
           <div className="grid grid-cols-2 gap-3">
             <Link href="/stats">
               <Button variant="outline" className="border-2 border-golf-green-500 text-golf-green-700 rounded-xl p-3">
